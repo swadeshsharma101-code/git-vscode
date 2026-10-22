@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 40px; color: #222; }
+    .card { max-width: 700px; margin: auto; background: #fff; padding: 30px;
+             border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+    h1 { margin-top: 0; }
+    .stats { display: flex; gap: 16px; margin: 20px 0; }
+    .stat { flex: 1; background: #eef3ff; padding: 14px; border-radius: 8px; text-align: center; }
+    .stat b { display: block; font-size: 22px; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e3e3e3; }
+    th { background: #333; color: #fff; }
+    tr:hover { background: #fafafa; }
+    .grade { font-weight: bold; }
+    .A { color: #1a8f3c; } .B { color: #2b6cb0; }
+    .C { color: #d98200; } .D { color: #c0392b; }
+    footer { margin-top: 20px; font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Student Report</h1>
+    <div class="stats">
+      <div class="stat">Students<b>4</b></div>
+      <div class="stat">Average score<b>80.2</b></div>
+      <div class="stat">Top scorer<b>Asha</b></div>
+    </div>
+    <table>
+      <tr><th>Name</th><th>Course</th><th>Score</th><th>Grade</th></tr>
+      <tr><td>Asha</td><td>Python</td><td>92</td><td class='grade A'>A</td></tr>
+<tr><td>Ravi</td><td>SQL</td><td>78</td><td class='grade C'>C</td></tr>
+<tr><td>Meena</td><td>Python</td><td>85</td><td class='grade B'>B</td></tr>
+<tr><td>Karthik</td><td>Data Science</td><td>66</td><td class='grade D'>D</td></tr>
+    </table>
+    <footer>Generated on 20 Oct 2026, 02:32 PM with Python</footer>
+  </div>
+</body>
+</html>
