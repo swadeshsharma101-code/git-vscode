@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10172b">
+  <title>Northstar WAN | Executive operations</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17213a;
+      --muted: #78839a;
+      --line: #e8ebf2;
+      --paper: #fff;
+      --canvas: #f5f6fa;
+      --nav: #10172b;
+      --nav-muted: #9aa5bd;
+      --blue: #5368f5;
+      --blue-soft: #edf0ff;
+      --teal: #23b6a2;
+      --amber: #efa83a;
+      --red: #ef6c72;
+      --shadow: 0 8px 26px rgba(27, 38, 67, .045);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--canvas); color: var(--ink); }
+    button, select, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 248px; flex: 0 0 248px; padding: 25px 16px 18px; display: flex; flex-direction: column;
+      background: var(--nav); color: white; position: fixed; inset: 0 auto 0 0; z-index: 4;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px 31px; }
+    .brand-mark { width: 35px; height: 35px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(140deg,#7182ff,#4e58dd); box-shadow: 0 7px 18px #535ee455; }
+    .brand-mark svg { width: 21px; }
+    .brand-name { font-size: 15px; font-weight: 750; letter-spacing: -.3px; }
+    .brand-sub { color: #8490aa; font-size: 10px; margin-top: 2px; letter-spacing: 1.15px; text-transform: uppercase; }
+    .nav-label { color: #68748e; font-size: 9px; font-weight: 750; letter-spacing: 1.25px; padding: 0 11px 9px; }
+    .nav-list { display: grid; gap: 4px; }
+    .nav-item { width: 100%; color: var(--nav-muted); background: transparent; border: 0; border-radius: 9px; text-align: left; padding: 11px 12px; display: flex; align-items: center; gap: 12px; font-size: 12px; transition: .18s ease; }
+    .nav-item:hover { color: white; background: #ffffff0d; }
+    .nav-item.active { color: white; background: #5368f52b; box-shadow: inset 2px 0 #7383ff; }
+    .nav-item svg { width: 17px; height: 17px; opacity: .9; }
+    .nav-count { margin-left: auto; font-size: 10px; color: #9ba8ff; background: #6574ed24; border-radius: 6px; padding: 3px 6px; }
+    .side-bottom { margin-top: auto; }
+    .health-box { border: 1px solid #ffffff12; background: #ffffff08; border-radius: 11px; padding: 13px 12px; }
+    .health-head { display:flex; align-items:center; justify-content:space-between; color:#d5dbea; font-size:10px; }
+    .health-dot { width:7px; height:7px; background:#37d2a4; border-radius:50%; box-shadow:0 0 0 4px #37d2a41e; }
+    .health-box p { color:#7f8ba4; font-size:9px; margin:9px 0 0; line-height:1.55; }
+    .profile { border-top:1px solid #ffffff12; margin-top:16px; padding:15px 4px 0; display:flex; align-items:center; gap:10px; }
+    .avatar { width:30px; height:30px; border-radius:50%; display:grid; place-items:center; color:#dfe3ff; background:#5b62a5; font-size:10px; font-weight:700; }
+    .profile strong { display:block; font-size:10px; font-weight:650; }
+    .profile span { color:#8792a9; font-size:9px; }
+    .workspace { margin-left:248px; width:calc(100% - 248px); min-width:0; }
+    .topbar { height:66px; padding:0 35px; display:flex; align-items:center; justify-content:space-between; background:#fff; border-bottom:1px solid var(--line); }
+    .crumb { color:#8b95a9; font-size:11px; }
+    .crumb b { color:#303b55; font-weight:650; }
+    .top-actions { display:flex; align-items:center; gap:11px; }
+    .live-pill { border:1px solid #e3eee9; color:#2c9c7a; background:#f3fbf7; border-radius:20px; padding:6px 9px; display:flex; gap:7px; align-items:center; font-size:9px; font-weight:650; }
+    .live-pill i { width:6px;height:6px;border-radius:50%;background:#32bd8d; }
+    .icon-button { height:31px;width:31px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;color:#66718a; }
+    .icon-button svg { width:15px; }
+    main { padding:29px 35px 36px; max-width:1600px; margin:auto; }
+    .page-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin:0 0 22px; }
+    .eyebrow { color:var(--blue);text-transform:uppercase;letter-spacing:1.1px;font-size:9px;font-weight:750;margin-bottom:7px; }
+    h1 { font-size:23px; letter-spacing:-.7px; margin:0; line-height:1.25; }
+    .heading-sub { color:var(--muted);font-size:11px;margin:6px 0 0; }
+    .heading-controls { display:flex;align-items:center;gap:8px; }
+    .select-wrap { position:relative; }
+    .control { height:34px;border:1px solid #e2e6ef;background:#fff;border-radius:8px;padding:0 28px 0 10px;color:#526078;font-size:10px;outline:none; }
+    .control:focus { border-color:#aab5ff;box-shadow:0 0 0 3px #5368f512; }
+    .export-btn { height:34px;border:0;border-radius:8px;background:var(--blue);color:white;padding:0 12px;display:flex;align-items:center;gap:7px;font-size:10px;font-weight:650;box-shadow:0 4px 10px #5368f52c; }
+    .export-btn:hover { background:#4358e5; }
+    .export-btn svg { width:13px; }
+    .filter-strip { margin-top:-7px; margin-bottom:15px; display:flex; align-items:center; gap:8px; color:#8791a5; font-size:9px; }
+    .filter-chip { border:1px solid #e5e8f0; border-radius:20px; background:white; padding:5px 9px; color:#67738c; font-size:9px; cursor:pointer; }
+    .filter-chip:hover,.filter-chip.selected { border-color:#cdd3ff;color:#4c60e9;background:#f7f8ff; }
+    .grid { display:grid; gap:14px; }
+    .metrics { grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:15px; }
+    .card { background:var(--paper);border:1px solid #eceef4;border-radius:11px;box-shadow:var(--shadow);min-width:0; }
+    .metric { padding:15px 16px 14px;position:relative;overflow:hidden; }
+    .metric-top { display:flex;align-items:center;justify-content:space-between;color:#77829a;font-size:10px; }
+    .metric-icon { width:28px;height:28px;border-radius:8px;display:grid;place-items:center; }
+    .metric-icon svg { width:15px;height:15px; }
+    .metric-value { font-size:25px;letter-spacing:-.8px;font-weight:720;margin:9px 0 4px;color:#1b2640; }
+    .metric-foot { display:flex;align-items:center;gap:5px;color:#8490a4;font-size:9px; }
+    .trend { font-weight:700;color:#22a981; }
+    .trend.down { color:#dd9a38; }
+    .spark { position:absolute;right:13px;bottom:11px;width:76px;height:25px;opacity:.65; }
+    .middle-grid { grid-template-columns:minmax(0,1.48fr) minmax(280px,.9fr); margin-bottom:15px; }
+    .lower-grid { grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr); margin-bottom:15px; }
+    .card-head { padding:15px 16px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px; }
+    .card-title { font-size:11px;font-weight:700;color:#27324b; }
+    .card-sub { color:#929bad;font-size:9px;margin-top:4px; }
+    .card-menu { color:#a0a9ba;font-size:16px;letter-spacing:1px;line-height:10px; }
+    .chart-area { padding:11px 14px 12px; }
+    .chart-area svg { width:100%;height:auto;display:block; }
+    .legend { display:flex;gap:13px;align-items:center;flex-wrap:wrap;font-size:9px;color:#8691a6; }
+    .legend span { display:flex;align-items:center;gap:5px; }
+    .legend i { width:7px;height:7px;border-radius:2px;display:inline-block; }
+    .vendor-list { padding:12px 16px 14px;display:grid;gap:10px; }
+    .vendor-row { display:grid;grid-template-columns:23px minmax(75px,1fr) 32px 86px;align-items:center;gap:8px;cursor:pointer; }
+    .vendor-row:hover .vendor-name { color:var(--blue); }
+    .vendor-rank { color:#a3acbd;font-size:9px;font-weight:700; }
+    .vendor-name { color:#4d5870;font-size:9px;font-weight:600; }
+    .vendor-val { text-align:right;color:#7e899e;font-size:9px;font-variant-numeric:tabular-nums; }
+    .bar-track { height:5px;background:#f0f2f7;border-radius:5px;overflow:hidden; }
+    .bar-fill { height:100%;border-radius:5px;background:linear-gradient(90deg,#6173ff,#8793ff); }
+    .panel-link { border-top:1px solid #f0f1f5;padding:10px 16px;display:flex;justify-content:space-between;color:#586bea;font-size:9px;font-weight:650;text-decoration:none;cursor:pointer; }
+    .panel-link:hover { background:#fafaff; }
+    .table-wrap { overflow:auto; }
+    table { border-collapse:collapse;width:100%;white-space:nowrap; }
+    th { text-align:left;padding:10px 13px;color:#9aa3b3;font-size:8px;text-transform:uppercase;letter-spacing:.55px;font-weight:700;border-bottom:1px solid #f0f1f5; }
+    td { padding:10px 13px;color:#58647b;font-size:9px;border-bottom:1px solid #f3f4f7; }
+    tbody tr:last-child td { border-bottom:0; }
+    tbody tr:hover { background:#fafbff; }
+    .link-id { color:#4d5ee2;font-weight:700; }
+    .util { display:flex;align-items:center;gap:7px; }
+    .util-track { width:50px;height:4px;background:#f0f2f6;border-radius:4px;overflow:hidden; }
+    .util-fill { height:100%;border-radius:4px; }
+    .pill { font-size:8px;padding:4px 6px;border-radius:5px;font-weight:650; }
+    .pill.green { color:#249a75;background:#eaf8f2; }
+    .pill.amber { color:#bb8129;background:#fff5e3; }
+    .pill.red { color:#ce5d69;background:#fff0f1; }
+    .tier-list { padding:13px 16px 15px;display:grid;gap:13px; }
+    .tier-row { display:grid;grid-template-columns:75px 1fr 31px;gap:9px;align-items:center; }
+    .tier-name { font-size:9px;color:#657087; }
+    .tier-track { height:7px;background:#f0f2f7;border-radius:8px;overflow:hidden; }
+    .tier-fill { height:100%;border-radius:8px; }
+    .tier-count { color:#344057;font-size:10px;font-weight:700;text-align:right; }
+    .map-legend { padding:0 16px 14px; }
+    .map-svg { padding:8px 13px 0; }
+    .map-svg svg { width:100%;height:auto;display:block; }
+    .map-point { cursor:pointer;transition:opacity .15s,transform .15s;transform-box:fill-box;transform-origin:center; }
+    .map-point:hover { transform:scale(1.7); }
+    .map-point.dimmed { opacity:.15; }
+    .section-view { display:none; }
+    .section-view.active { display:block;animation:fade-in .2s ease; }
+    @keyframes fade-in { from { opacity:.5;transform:translateY(3px); } to { opacity:1;transform:none; } }
+    .section-card { margin-bottom:15px; }
+    .section-card .card-head { padding-bottom:12px; }
+    .section-intro { color:#8791a4;font-size:10px;line-height:1.6;margin-top:6px; }
+    .full-table th { padding:12px 14px; }
+    .full-table td { padding:12px 14px; }
+    .search { height:30px;border:1px solid #e7eaf1;border-radius:7px;padding:0 9px;font-size:9px;width:160px;color:#43506a;outline:none; }
+    .search:focus { border-color:#adb7ff; }
+    .country-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:14px 16px 16px; }
+    .country-card { border:1px solid #eff0f5;border-radius:9px;padding:11px; }
+    .country-top { display:flex;justify-content:space-between;align-items:center;font-size:9px;font-weight:650;color:#48546c; }
+    .country-count { font-size:17px;font-weight:750;color:#202b44;margin:7px 0 8px; }
+    .country-meta { font-size:8px;color:#909aad; }
+    .coverage-bar { height:4px;background:#f0f2f7;border-radius:5px;margin:8px 0 6px;overflow:hidden; }
+    .coverage-bar i { display:block;height:100%;background:#5b70f4;border-radius:5px; }
+    .starlink-layout { display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:14px; }
+    .orbit-card { min-height:332px;overflow:hidden;position:relative;background:radial-gradient(ellipse at 50% 108%,#e8ebff 0,#f8f9ff 49%,#fff 78%); }
+    .orbit-card .card-head { position:relative;z-index:1; }
+    .orbit-scene { height:260px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 100%,#1d3768 0,#111d39 48%,#10172b 100%); }
+    .orbit-scene>svg { width:100%;height:100%;display:block; }
+    .orbit-scene .orbit-path { fill:none;stroke:#9ba9ff;stroke-width:1;stroke-dasharray:3 4;opacity:.72; }
+    .orbit-scene .orbit-glow { fill:none;stroke:#7086ff;stroke-width:5;opacity:.12; }
+    .orbit-scene .earth-edge { fill:none;stroke:#87c9ff;stroke-width:2;opacity:.8;filter:drop-shadow(0 0 8px #58aaff); }
+    .orbit-scene .earth-grid { fill:none;stroke:#b4d8ff;stroke-width:.7;opacity:.28; }
+    .orbit-scene .orbital-satellite { filter:drop-shadow(0 0 4px #dce5ff); }
+    .orbit-scene .orbit-caption { fill:#d5e0ff;font-size:8px;letter-spacing:1px; }
+    .orbit-scene .orbit-label { fill:#b3c9f3;font-size:7px;letter-spacing:.8px; }
+    .satellite-status { position:absolute;right:15px;bottom:13px;display:flex;align-items:center;gap:6px;color:#7884a0;font-size:8px; }
+    .satellite-status i { background:#31bd91;width:6px;height:6px;border-radius:50%; }
+    .star-stats { padding:8px 15px 14px;display:grid;gap:0; }
+    .star-stat { display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #f1f2f5;color:#768198;font-size:9px; }
+    .star-stat:last-child { border-bottom:0; }
+    .star-stat strong { color:#34405a;font-size:11px; }
+    .activity-list { display:grid;gap:0;padding:4px 16px 11px; }
+    .activity-row { display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f2f3f6; }
+    .activity-row:last-child { border:0; }
+    .activity-mark { width:25px;height:25px;border-radius:7px;display:grid;place-items:center;font-size:10px; }
+    .activity-text { flex:1;color:#59657b;font-size:9px; }
+    .activity-text small { display:block;color:#9aa3b3;margin-top:3px;font-size:8px; }
+    .activity-time { color:#a0a8b7;font-size:8px; }
+    .toast { position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#17213a;color:white;padding:10px 15px;border-radius:8px;font-size:10px;box-shadow:0 8px 25px #10172b33;transition:.2s;z-index:9; }
+    .toast.show { opacity:1;transform:translate(-50%,0); }
+    .mobile-menu { display:none; }
+    @media(max-width:1050px) {
+      .sidebar { width:215px;flex-basis:215px; }.workspace { margin-left:215px;width:calc(100% - 215px); }
+      main { padding-left:23px;padding-right:23px; }.topbar { padding:0 23px; }
+      .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .middle-grid,.lower-grid { grid-template-columns:minmax(0,1fr); }
+    }
+    @media(max-width:700px) {
+      .sidebar { width:0;padding:0;overflow:hidden;transition:width .2s; }.sidebar.open { width:248px;padding:20px 16px;box-shadow:10px 0 25px #10172b25; }
+      .workspace { margin-left:0;width:100%; }.topbar { height:57px;padding:0 15px; }
+      .mobile-menu { display:grid; }.crumb { margin-right:auto;margin-left:10px; }
+      main { padding:21px 14px 28px; }.page-heading { flex-direction:column; }.heading-controls { width:100%; }.heading-controls .control { flex:1; }
+      .metrics { gap:9px; }.metric { padding:12px; }.metric-value { font-size:22px; }.spark { display:none; }
+      .country-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.starlink-layout { grid-template-columns:1fr; }
+      .vendor-row { grid-template-columns:20px minmax(60px,1fr) 30px 65px; }.filter-strip { flex-wrap:wrap; }
+    }
+    @media(max-width:390px) { .metrics { grid-template-columns:1fr 1fr; }.metric-top { font-size:9px; }.live-pill { display:none; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 17.5 8.3 12l3.6 3.2L20.5 6" stroke="white" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 6h5v5" stroke="white" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><div class="brand-name">northstar</div><div class="brand-sub">WAN intelligence</div></div>
+      </div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav-list" aria-label="Dashboard sections">
+        <button class="nav-item active" data-view="overview"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="14" y="11" width="7" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="14" width="8" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>Executive overview</button>
+        <button class="nav-item" data-view="vendors"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 19c.3-3.1 2.2-5 5.5-5s5.2 1.9 5.5 5M16 5.5a3 3 0 0 1 0 5.8M17 14c2.1.5 3.3 2.1 3.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Vendors &amp; sites<span class="nav-count">10</span></button>
+        <button class="nav-item" data-view="links"><svg viewBox="0 0 24 24" fill="none"><path d="M9.5 14.5 14.5 9.5M7.2 16.8l-1 1a4 4 0 0 1-5.7-5.7l4-4a4 4 0 0 1 5.7 0M16.8 7.2l1-1a4 4 0 0 1 5.7 5.7l-4 4a4 4 0 0 1-5.7 0" transform="translate(1 0)" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Link utilization<span class="nav-count">486</span></button>
+        <button class="nav-item" data-view="geo"><svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>Geo availability</button>
+        <button class="nav-item" data-view="tiers"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V9m5 11V4m5 16v-8m5 8V7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Site segmentation</button>
+        <button class="nav-item" data-view="starlink"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="11" ry="4.3" transform="rotate(-27 12 12)" stroke="currentColor" stroke-width="1.5"/><circle cx="17.5" cy="6" r="1.5" fill="currentColor"/></svg>Starlink network<span class="nav-count">42</span></button>
+      </nav>
+      <div class="side-bottom">
+        <div class="health-box"><div class="health-head"><span>Network health</span><i class="health-dot"></i></div><p>All systems operational<br>Last sync · 2 minutes ago</p></div>
+        <div class="profile"><div class="avatar">SS</div><div><strong>Swadesh Sharma</strong><span>Network executive</span></div></div>
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <button class="icon-button mobile-menu" id="menuToggle" aria-label="Toggle navigation"><svg viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        <div class="crumb">Network operations <span style="padding:0 7px;color:#c1c7d2">/</span> <b id="crumbTitle">Executive overview</b></div>
+        <div class="top-actions"><div class="live-pill"><i></i>LIVE DATA · DEMO</div><button class="icon-button" id="helpButton" aria-label="About this dashboard"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.6a2.1 2.1 0 1 1 3.5 1.6c-1 .9-1.5 1.2-1.5 2.5M10 14.6v.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></div>
+      </header>
+      <main>
+        <div class="page-heading">
+          <div><div class="eyebrow" id="pageEyebrow">NETWORK PULSE · GLOBAL ESTATE</div><h1 id="pageTitle">WAN executive overview</h1><p class="heading-sub" id="pageSub">A connected view of availability, utilization and provider footprint.</p></div>
+          <div class="heading-controls">
+            <select class="control" id="regionFilter" aria-label="Filter by region"><option value="All">All regions</option><option>Americas</option><option>EMEA</option><option>APAC</option></select>
+            <select class="control" id="vendorFilter" aria-label="Filter by vendor"><option value="All">All vendors</option></select>
+            <button class="export-btn" id="exportButton"><svg viewBox="0 0 18 18" fill="none"><path d="M9 2.5v8m0 0 3-3m-3 3-3-3M3.5 11.5v3h11v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Export</button>
+          </div>
+        </div>
+        <div class="filter-strip"><span>Quick view</span><button class="filter-chip selected" data-region="All">Global estate</button><button class="filter-chip" data-region="Americas">Americas</button><button class="filter-chip" data-region="EMEA">EMEA</button><button class="filter-chip" data-region="APAC">APAC</button><span style="margin-left:auto" id="asOf">Snapshot · 20 Nov 2026, 20:38 IST</span></div>
+        <section class="section-view active" id="view-overview">
+          <div class="grid metrics" id="metricCards"></div>
+          <div class="grid middle-grid">
+            <article class="card">
+              <div class="card-head"><div><div class="card-title">WAN footprint by provider</div><div class="card-sub">Top 10 vendors · active links and connected sites</div></div><span class="card-menu">···</span></div>
+              <div class="chart-area" id="vendorChart"></div><div class="legend" style="padding:0 4px 1px"><span><i style="background:#5e70f5"></i>Active links</span><span><i style="background:#b4bcff"></i>Sites served</span></div>
+              <a class="panel-link" data-link="vendors">Explore vendor footprint <span>→</span></a>
+            </article>
+            <article class="card">
+              <div class="card-head"><div><div class="card-title">Regional availability</div><div class="card-sub">Geographic link distribution</div></div><span class="card-menu">···</span></div>
+              <div class="map-svg" id="overviewMap"></div><div class="legend map-legend"><span><i style="background:#5368f5"></i>Fiber / broadband</span><span><i style="background:#23b6a2"></i>Satellite</span><span><i style="background:#efa83a"></i>Wireless</span></div>
+              <a class="panel-link" data-link="geo">Open geo availability <span>→</span></a>
+            </article>
+          </div>
+          <div class="grid lower-grid">
+            <article class="card">
+              <div class="card-head"><div><div class="card-title">Highest utilized WAN links</div><div class="card-sub">Top 5 links by current bandwidth utilization</div></div><span class="card-menu">···</span></div>
+              <div class="table-wrap" id="topLinks"></div><a class="panel-link" data-link="links">View all link performance <span>→</span></a>
+            </article>
+            <article class="card">
+              <div class="card-head"><div><div class="card-title">Sites by service tier</div><div class="card-sub">Estate segmentation · 4 service categories</div></div><span class="card-menu">···</span></div>
+              <div class="tier-list" id="tierBars"></div><a class="panel-link" data-link="tiers">Explore site segmentation <span>→</span></a>
+            </article>
+          </div>
+          <article class="card">
+            <div class="card-head"><div><div class="card-title">Starlink satellite footprint</div><div class="card-sub">LEO connectivity · global sites and link health</div></div><span class="card-menu">···</span></div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 180px;align-items:center;padding:10px 16px 13px;gap:15px">
+              <div style="color:#768198;font-size:10px;line-height:1.7">42 Starlink links keep remote and hard-to-reach locations connected across <b style="color:#35405a">18 countries</b>. Click through for constellation details and regional distribution.</div>
+              <a class="export-btn" data-link="starlink" style="text-decoration:none;justify-content:center">Explore Starlink <span>→</span></a>
+            </div>
+          </article>
+        </section>
+        <section class="section-view" id="view-vendors">
+          <article class="card section-card"><div class="card-head"><div><div class="card-title">Top 10 WAN vendors</div><div class="section-intro">Provider footprint, active circuit volume and sites served. Select a vendor to filter the dashboard.</div></div><input class="search" id="vendorSearch" placeholder="Search vendors..." aria-label="Search vendors"></div><div class="table-wrap" id="vendorTable"></div></article>
+          <div class="grid lower-grid"><article class="card"><div class="card-head"><div><div class="card-title">Provider mix by link type</div><div class="card-sub">Estimated active links by access technology</div></div></div><div class="chart-area" id="typeChart"></div><div class="legend" style="padding:0 18px 15px"><span><i style="background:#5368f5"></i>MPLS / private</span><span><i style="background:#23b6a2"></i>Internet / SD-WAN</span><span><i style="background:#efa83a"></i>Satellite</span></div></article><article class="card"><div class="card-head"><div><div class="card-title">Vendor highlights</div><div class="card-sub">Leading providers in the selected footprint</div></div></div><div class="vendor-list" id="vendorHighlights"></div></article></div>
+        </section>
+        <section class="section-view" id="view-links">
+          <article class="card section-card"><div class="card-head"><div><div class="card-title">WAN link utilization</div><div class="section-intro">Links sorted by highest current utilization. Utilization above 85% is highlighted for attention.</div></div><input class="search" id="linkSearch" placeholder="Search circuits..." aria-label="Search circuits"></div><div class="table-wrap" id="allLinks"></div></article>
+          <div class="grid metrics" id="linkMetrics"></div>
+        </section>
+        <section class="section-view" id="view-geo">
+          <div class="grid middle-grid"><article class="card"><div class="card-head"><div><div class="card-title">Global WAN availability</div><div class="card-sub">Illustrative regional footprint · select a map marker to filter by region</div></div></div><div class="map-svg" id="largeMap"></div><div class="legend map-legend"><span><i style="background:#5368f5"></i>Fiber / broadband</span><span><i style="background:#23b6a2"></i>Satellite</span><span><i style="background:#efa83a"></i>Wireless</span></div></article><article class="card"><div class="card-head"><div><div class="card-title">Regional summary</div><div class="card-sub">Sites and circuits by operating region</div></div></div><div class="vendor-list" id="regionSummary"></div></article></div>
+          <article class="card section-card"><div class="card-head"><div><div class="card-title">Country availability</div><div class="card-sub">Illustrative counts by country and connection vendor</div></div></div><div class="country-grid" id="countryCards"></div></article>
+        </section>
+        <section class="section-view" id="view-tiers">
+          <div class="grid metrics" id="tierMetrics"></div>
+          <article class="card section-card"><div class="card-head"><div><div class="card-title">Site category segmentation</div><div class="section-intro">Site counts and WAN service profile by business criticality tier.</div></div></div><div class="table-wrap" id="tierTable"></div></article>
+          <div class="grid lower-grid"><article class="card"><div class="card-head"><div><div class="card-title">Tier mix across regions</div><div class="card-sub">Illustrative site category split by region</div></div></div><div class="chart-area" id="regionTierChart"></div><div class="legend" style="padding:0 18px 15px"><span><i style="background:#5368f5"></i>Premium+</span><span><i style="background:#8593ff"></i>Premium</span><span><i style="background:#23b6a2"></i>Standard</span><span><i style="background:#c9cfdb"></i>Basic</span></div></article><article class="card"><div class="card-head"><div><div class="card-title">Service tier definitions</div><div class="card-sub">Illustrative operating model</div></div></div><div class="activity-list" id="tierDefinitions"></div></article></div>
+        </section>
+        <section class="section-view" id="view-starlink">
+          <div class="grid metrics" id="starMetrics"></div>
+          <div class="starlink-layout">
+            <article class="card orbit-card"><div class="card-head"><div><div class="card-title">Low Earth orbit · live view</div><div class="card-sub">Illustrative Starlink satellite orbit · animation is for demonstration</div></div><span class="pill green">ORBIT NOMINAL</span></div><div class="orbit-scene" role="img" aria-label="Animated low-earth-orbit satellite circling a detailed Earth globe"><svg viewBox="0 0 640 300" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="earthOcean" cx="34%" cy="28%" r="75%"><stop stop-color="#6b9bca"/><stop offset=".48" stop-color="#285382"/><stop offset="1" stop-color="#101c39"/></radialGradient><radialGradient id="earthShade" cx="72%" cy="58%" r="70%"><stop offset=".38" stop-color="#07142d" stop-opacity="0"/><stop offset="1" stop-color="#07142d" stop-opacity=".8"/></radialGradient><linearGradient id="atmosphere" x1="0" x2="1"><stop stop-color="#8ec9ff" stop-opacity=".1"/><stop offset=".5" stop-color="#80c6ff" stop-opacity=".38"/><stop offset="1" stop-color="#8ec9ff" stop-opacity=".05"/></linearGradient><clipPath id="earthClip"><circle cx="320" cy="248" r="143"/></clipPath><path id="orbitPath" d="M38 207 A282 130 0 1 1 602 207 A282 130 0 1 1 38 207"/></defs><g fill="#dbe6ff" opacity=".7"><circle cx="60" cy="47" r="1"/><circle cx="118" cy="126" r=".8"/><circle cx="187" cy="38" r=".7"/><circle cx="252" cy="81" r=".8"/><circle cx="330" cy="36" r="1"/><circle cx="405" cy="65" r=".7"/><circle cx="488" cy="36" r=".8"/><circle cx="559" cy="95" r="1"/><circle cx="602" cy="50" r=".7"/><circle cx="78" cy="188" r=".7"/><circle cx="537" cy="160" r=".8"/><circle cx="220" cy="157" r=".6"/></g><ellipse class="orbit-glow" cx="320" cy="207" rx="282" ry="130"/><ellipse class="orbit-path" cx="320" cy="207" rx="282" ry="130"/><circle cx="320" cy="248" r="146" fill="url(#earthOcean)"/><g clip-path="url(#earthClip)"><image id="earthMap" x="177" y="183" width="286" height="112" opacity=".96" style="filter:sepia(.75) hue-rotate(65deg) saturate(.75) brightness(.8)"/><ellipse class="earth-grid" cx="320" cy="248" rx="95" ry="143"/><ellipse class="earth-grid" cx="320" cy="248" rx="42" ry="143"/><ellipse class="earth-grid" cx="320" cy="248" rx="143" ry="51"/><ellipse class="earth-grid" cx="320" cy="248" rx="143" ry="100"/><circle cx="320" cy="248" r="143" fill="url(#earthShade)"/></g><circle cx="320" cy="248" r="148" fill="none" stroke="url(#atmosphere)" stroke-width="8"/><circle class="earth-edge" cx="320" cy="248" r="145"/><text class="orbit-caption" x="320" y="287" text-anchor="middle">EARTH · LOW-EARTH ORBIT</text><text class="orbit-label" x="18" y="26">LEO ALTITUDE · ILLUSTRATIVE</text><g class="orbital-satellite" transform="translate(-13 -10)"><g><animateMotion dur="13s" repeatCount="indefinite" rotate="auto"><mpath href="#orbitPath"/></animateMotion><rect x="-7" y="-3" width="14" height="6" rx="1" fill="#f2c56d" stroke="#fff0c7" stroke-width=".7"/><path d="M-7-2.4 -21-5v10l14-2.6M7-2.4 21-5v10L7 2.6" fill="#7989ef" stroke="#d9e1ff" stroke-width=".8"/><path d="M0-3v-6m-2-1h4" stroke="#eaf1ff" stroke-width="1"/><circle cy="-10" r="1.2" fill="#d6e8ff"/></g></g><g fill="#b8c5ff"><circle cx="82" cy="112" r="2"/><circle cx="202" cy="95" r="1.5"/><circle cx="437" cy="100" r="2"/><circle cx="554" cy="116" r="1.5"/></g></svg><div class="satellite-status"><i></i>Constellation active</div></div></article>
+            <article class="card"><div class="card-head"><div><div class="card-title">Constellation snapshot</div><div class="card-sub">Fictional operational telemetry</div></div></div><div class="star-stats" id="starStats"></div></article>
+          </div>
+          <div class="grid lower-grid" style="margin-top:15px"><article class="card"><div class="card-head"><div><div class="card-title">Starlink links by region</div><div class="card-sub">Remote-site distribution and availability</div></div></div><div class="vendor-list" id="starRegionList"></div></article><article class="card"><div class="card-head"><div><div class="card-title">Recent network events</div><div class="card-sub">Illustrative Starlink operations feed</div></div></div><div class="activity-list" id="starEvents"></div></article></div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const vendors = [
+      {name:"Lumen",links:84,sites:61,region:"Americas",type:"MPLS / private",availability:99.98},
+      {name:"AT&T",links:71,sites:52,region:"Americas",type:"Internet / SD-WAN",availability:99.95},
+      {name:"BT",links:63,sites:48,region:"EMEA",type:"MPLS / private",availability:99.92},
+      {name:"Vodafone",links:57,sites:45,region:"EMEA",type:"Internet / SD-WAN",availability:99.91},
+      {name:"NTT",links:49,sites:39,region:"APAC",type:"MPLS / private",availability:99.96},
+      {name:"Tata Communications",links:43,sites:34,region:"APAC",type:"Internet / SD-WAN",availability:99.89},
+      {name:"Verizon",links:39,sites:31,region:"Americas",type:"MPLS / private",availability:99.94},
+      {name:"Orange Business",links:34,sites:27,region:"EMEA",type:"Internet / SD-WAN",availability:99.90},
+      {name:"Starlink",links:42,sites:24,region:"Global",type:"Satellite",availability:99.87},
+      {name:"Hughes",links:4,sites:4,region:"Global",type:"Satellite",availability:99.82}
+    ];
+    const links = [
+      {id:"WAN-CHI-042",site:"Chicago HQ",vendor:"Lumen",region:"Americas",bandwidth:1000,util:94,category:"Premium+"},
+      {id:"WAN-LON-018",site:"London Hub",vendor:"BT",region:"EMEA",bandwidth:500,util:91,category:"Premium+"},
+      {id:"WAN-SIN-007",site:"Singapore DC",vendor:"NTT",region:"APAC",bandwidth:1000,util:89,category:"Premium+"},
+      {id:"WAN-NYC-031",site:"New York Campus",vendor:"AT&T",region:"Americas",bandwidth:500,util:87,category:"Premium"},
+      {id:"WAN-FRA-013",site:"Frankfurt Office",vendor:"Vodafone",region:"EMEA",bandwidth:500,util:84,category:"Premium"},
+      {id:"WAN-TYO-009",site:"Tokyo Office",vendor:"NTT",region:"APAC",bandwidth:300,util:82,category:"Premium"},
+      {id:"WAN-SYD-025",site:"Sydney Branch",vendor:"Tata Communications",region:"APAC",bandwidth:200,util:79,category:"Standard"},
+      {id:"WAN-MIA-016",site:"Miami Branch",vendor:"Verizon",region:"Americas",bandwidth:200,util:76,category:"Standard"},
+      {id:"WAN-DXB-011",site:"Dubai Office",vendor:"Orange Business",region:"EMEA",bandwidth:100,util:73,category:"Standard"},
+      {id:"WAN-AKL-004",site:"Auckland Remote",vendor:"Starlink",region:"APAC",bandwidth:100,util:71,category:"Basic"},
+      {id:"WAN-DEL-022",site:"Delhi Office",vendor:"Tata Communications",region:"APAC",bandwidth:300,util:68,category:"Premium"},
+      {id:"WAN-SAO-035",site:"Sao Paulo Branch",vendor:"Lumen",region:"Americas",bandwidth:200,util:65,category:"Standard"},
+      {id:"WAN-KEF-003",site:"Reykjavik Remote",vendor:"Starlink",region:"EMEA",bandwidth:100,util:61,category:"Basic"},
+      {id:"WAN-YYZ-020",site:"Toronto Campus",vendor:"AT&T",region:"Americas",bandwidth:500,util:59,category:"Premium+"},
+      {id:"WAN-NBO-008",site:"Nairobi Remote",vendor:"Hughes",region:"EMEA",bandwidth:50,util:55,category:"Basic"}
+    ];
+    const tiers = [
+      {name:"Premium+",count:42,color:"#5368f5",sla:"99.99%",bandwidth:"500 Mbps – 2 Gbps",description:"Mission-critical hubs and data centers"},
+      {name:"Premium",count:96,color:"#8593ff",sla:"99.95%",bandwidth:"200 – 500 Mbps",description:"Regional offices and key campuses"},
+      {name:"Standard",count:178,color:"#23b6a2",sla:"99.90%",bandwidth:"50 – 200 Mbps",description:"Business branches and shared offices"},
+      {name:"Basic",count:86,color:"#c9cfdb",sla:"99.50%",bandwidth:"Up to 100 Mbps",description:"Remote, low-traffic and backup locations"}
+    ];
+    const countries = [
+      {country:"United States",flag:"🇺🇸",region:"Americas",sites:68,vendor:"Lumen · AT&T"},
+      {country:"United Kingdom",flag:"🇬🇧",region:"EMEA",sites:42,vendor:"BT · Vodafone"},
+      {country:"India",flag:"🇮🇳",region:"APAC",sites:38,vendor:"Tata · NTT"},
+      {country:"Germany",flag:"🇩🇪",region:"EMEA",sites:34,vendor:"Vodafone · BT"},
+      {country:"Japan",flag:"🇯🇵",region:"APAC",sites:29,vendor:"NTT"},
+      {country:"Canada",flag:"🇨🇦",region:"Americas",sites:27,vendor:"AT&T · Lumen"},
+      {country:"Australia",flag:"🇦🇺",region:"APAC",sites:24,vendor:"Tata · Starlink"},
+      {country:"Brazil",flag:"🇧🇷",region:"Americas",sites:21,vendor:"Lumen"},
+      {country:"United Arab Emirates",flag:"🇦🇪",region:"EMEA",sites:18,vendor:"Orange · Starlink"},
+      {country:"Singapore",flag:"🇸🇬",region:"APAC",sites:17,vendor:"NTT · Tata"},
+      {country:"South Africa",flag:"🇿🇦",region:"EMEA",sites:15,vendor:"Hughes · Vodafone"},
+      {country:"New Zealand",flag:"🇳🇿",region:"APAC",sites:12,vendor:"Starlink · NTT"}
+    ];
+    const regions = [
+      {name:"Americas",sites:148,links:176,availability:"99.96%",mix:[14,34,65,35]},
+      {name:"EMEA",sites:132,links:164,availability:"99.93%",mix:[13,31,58,30]},
+      {name:"APAC",sites:122,links:146,availability:"99.94%",mix:[15,31,55,21]}
+    ];
+    const titleMap = {
+      overview:["Executive overview","WAN executive overview","A connected view of availability, utilization and provider footprint."],
+      vendors:["Vendors & sites","WAN vendors & site footprint","Compare provider circuits, coverage and availability across your estate."],
+      links:["Link utilization","WAN link performance","Monitor the busiest circuits and spot capacity pressure across the network."],
+      geo:["Geo availability","Global WAN availability","Explore illustrative country and regional availability by provider."],
+      tiers:["Site segmentation","Site service segmentation","Understand how WAN services are distributed across site criticality tiers."],
+      starlink:["Starlink network","Starlink satellite network","Remote-site coverage and illustrative low-earth-orbit constellation telemetry."]
+    };
+    const palette=["#5368f5","#23b6a2","#efa83a","#8d66d8","#ee7184","#4fa7ce","#8ab653","#e38d51","#687a9e","#a1826e"];
+    const worldMapImage="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTIwIiBoZWlnaHQ9IjQ0MCIgdmlld0JveD0iMCAwIDU2MCAyMjAiPjxnIGZpbGw9IiNlMWU2ZjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIuNTUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0zMzIuNywxMzAuNCAzNDEuMCwxMzYuMSAzNDIuNywxNDQuNiAzNDEuNSwxNDUuNSAzMzMuOCwxNDYuNCAzMzIuNSwxNDMuMyAzMjcuOCwxNDEuNiAzMjYuMSwxMzguOSAzMjcuMywxMzAuNyAzMzIuNywxMzAuNFoiLz48cGF0aCBkPSJNMjY2LjUsODcuMCAyNjYuNSw4OS43IDI2MS40LDg5LjYgMjU5LjksOTYuNiAyNTMuNSw5Ny4xIDI1Ny4xLDk2LjMgMjYyLjMsODguMiAyNjYuNSw4Ny4wWiIvPjxwYXRoIGQ9Ik04OC45LDU0LjYgODEuOCw1MS44IDc3LjAsNDYuNiA3Ny44LDQ0LjEgNjkuMywzOC4zIDY2LjIsMzkuNiA2MC43LDM3LjUgNjAuNywyMy4yIDY3LjcsMjQuNCA4MC43LDIyLjAgMTAwLjcsMjQuNCAxMDIuOCwyNS4yIDEwMC42LDI1LjkgMTAzLjQsMjYuMyAxMTAuNiwyNi43IDExMS43LDI0LjggMTE0LjksMjQuNiAxMjIuMiwyNi4zIDEyOC4xLDI0LjkgMTMwLjUsMjYuOSAxMzMuNCwyNC4yIDEyOS45LDIyLjYgMTMxLjksMTkuOCAxMzUuNSwyMC44IDEzOS4xLDI1LjEgMTQzLjEsMjQuOSAxNDQuMSwyNy4wIDE0Ny4wLDIyLjkgMTUxLjUsMjMuMyAxNTMuNiwyNC4wIDE1My40LDI3LjEgMTQ2LjYsMjguMCAxMzguOSwzMi41IDEzMy40LDM2LjYgMTMyLjcsMzkuNSAxMzYuNCw0Mi40IDE1Mi4wLDQ1LjMgMTUyLjIsNDguMSAxNTUuNyw1MS4zIDE1Ny43LDQ5LjIgMTU1LjgsNDYuMCAxNjAuOSw0My4yIDE1Ny45LDM5LjcgMTU5LjcsMzguMiAxNTguNSwzNC40IDE2NS4xLDM0LjIgMTcxLjcsMzYuMyAxNzIuMiwzOS41IDE3NC44LDQwLjYgMTc5LjUsMzcuNCAxODMuOSw0My41IDE5MC44LDQ2LjEgMTkzLjQsNDkuOCAxODYuNiw1Mi43IDE3Ni43LDUyLjggMTY5LjQsNTcuOSAxNzguOCw1NC4zIDE4MC4yLDU1LjAgMTc4LjcsNTYuMCAxNzkuNyw1OC44IDE4NC4zLDU5LjMgMTg1LjksNTcuNiAxODcuMCw1OS4zIDE3OC4zLDYyLjkgMTc3LjEsNjEuNSAxNzkuOCw2MC4yIDE3NS42LDYwLjUgMTc0LjUsNTcuNiAxNzIuMyw1Ny4wIDE2OC44LDYwLjcgMTYzLjUsNjAuNyAxNTEuOCw2NS43IDE1MS42LDYwLjIgMTQyLjUsNTUuNyAxMzIuNSw1NC4wIDg4LjksNTQuNloiLz48cGF0aCBkPSJNMTU1LjksMTguNSAxNTQuMywxNy4yIDE2MS40LDE4LjUgMTU1LjksMTguNVoiLz48cGF0aCBkPSJNMTI5LjUsOS41IDEzMS40LDEwLjAgMTI4LjYsMTAuOCAxMjYuNiw5LjMgMTI5LjUsOS41WiIvPjxwYXRoIGQ9Ik0xNDIuOSwxNi4xIDEyOC45LDEyLjUgMTU1LjgsMTUuMyAxNDIuOSwxNi4xWiIvPjxwYXRoIGQ9Ik0xMDYuOSwxMC40IDEwOS4xLDEwLjYgMTAzLjQsMTEuMCAxMDYuOSwxMC40WiIvPjxwYXRoIGQ9Ik0xMDcuNCw5LjQgMTA5LjQsOS43IDEwNC45LDEwLjAgMTA3LjQsOS40WiIvPjxwYXRoIGQ9Ik0xOTMuNSw1MS4xIDE5MS43LDUzLjQgMTk2LjgsNTQuMiAxOTcuNCw1OC4yIDE5NS42LDU2LjUgMTkzLjgsNTcuOCAxODcuOCw1Ni43IDE5MC44LDUyLjAgMTkzLjUsNTEuMVoiLz48cGF0aCBkPSJNMTQ5LjUsMzAuMiAxNTUuNCwzMi4zIDE0NC4zLDMyLjYgMTQ2LjQsMjkuMiAxNDkuNSwzMC4yWiIvPjxwYXRoIGQ9Ik0xNTcuNSwxOS4yIDE3My4wLDIyLjAgMTc1LjgsMjQuMCAxNzMuMCwyNC43IDE4My44LDI3LjUgMTgwLjYsMzAuMyAxNzQuMiwyOC40IDE3OS40LDMyLjggMTczLjAsMzIuMiAxNzcuMSwzNS4wIDE3Mi45LDM0LjQgMTYzLjYsMzAuOCAxNTcuOCwzMS4wIDE2NS4wLDI5LjcgMTY3LjAsMjYuOSAxNjYuMCwyNS43IDE1Ny4yLDIyLjUgMTQyLjEsMjIuMSAxMzkuNywxOS40IDE0Ni41LDE3LjAgMTQ2LjYsMTguOSAxNTIuMCwxNy4xIDE1NC40LDE5LjYgMTU3LjUsMTkuMloiLz48cGF0aCBkPSJNMTMzLjAsMTYuNSAxMzkuMiwxNi45IDEzMS42LDE5LjYgMTMwLjYsMTcuNSAxMzMuMCwxNi41WiIvPjxwYXRoIGQ9Ik04OC45LDEzLjUgOTkuMiwxMS4yIDk3LjgsMTIuOSA4OC45LDEzLjVaIi8+PHBhdGggZD0iTTczLjYsNDcuMCA3NS4xLDQ2LjkgNzUuOSw0OS44IDczLjYsNDcuMFoiLz48cGF0aCBkPSJNMTE1LjksOC42IDEyNS4wLDEwLjggMTE2LjQsMTAuMCAxMTcuOSw5LjYgMTE1LjksOC42WiIvPjxwYXRoIGQ9Ik05MC45LDE2LjAgMTAwLjMsMTcuNSA4OC41LDIxLjQgODQuMSwxOS45IDg3LjIsMTcuMiA4NS43LDE2LjIgOTAuOSwxNi4wWiIvPjxwYXRoIGQ9Ik0xMTIuMywxMy45IDExNS42LDE0LjQgMTA1LjQsMTYuMSAxMDIuOSwxNS42IDEwNi4xLDE0LjkgOTYuOSwxNC44IDEwMC41LDEyLjkgMTEwLjMsMTQuNSAxMDguMSwxMy4wIDEwOS41LDEyLjUgMTEyLjMsMTMuOVoiLz48cGF0aCBkPSJNMTE0LjMsMTguMSAxMjIuNywyMy40IDEwMy43LDI1LjAgOTcuNSwyMi44IDEwNS4xLDIyLjIgOTQuMywyMC40IDEwMC44LDE3LjcgMTA5LjAsMTguMyAxMTEuNywyMC4zIDExMS40LDE4LjEgMTE0LjMsMTguMVoiLz48cGF0aCBkPSJNMTIzLjgsMTguNyAxMjIuMCwxNy43IDEyOC41LDE3LjEgMTI3LjUsMTguMiAxMjkuOCwxOC45IDEyNy4wLDIwLjggMTIwLjYsMTkuMCAxMjMuOCwxOC43WiIvPjxwYXRoIGQ9Ik0xMjYuOCwxMi42IDEyNy4zLDE1LjIgMTIwLjYsMTQuMyAxMjYuOCwxMi42WiIvPjxwYXRoIGQ9Ik0xMzAuNiw2LjcgMTM2LjMsNS43IDE0Ni41LDguNiAxMzUuNSwxMC4xIDEzMy45LDkuNSAxMzUuMSw4LjUgMTI5LjYsNy4zIDEzMC42LDYuN1oiLz48cGF0aCBkPSJNMTM3LjUsNC43IDE1Ni42LDIuOCAxODMuOCwzLjYgMTYwLjQsOC42IDE2Mi43LDkuOCAxNTQuNywxMy40IDE0MC44LDEyLjkgMTQzLjUsMTEuOSAxNDIuNywxMC44IDE0Ny44LDExLjMgMTQzLjIsMTAuMSAxNDcuNiw4LjYgMTQ0LjgsNy4yIDE1Mi43LDYuOSAxMzcuNSw0LjdaIi8+PHBhdGggZD0iTTE2My4wLDI2LjYgMTU5LjksMjYuNCAxNjEuOSwyNS40IDE2My4wLDI2LjZaIi8+PHBhdGggZD0iTTg4LjksNTQuNiAxMzIuNSw1NC4wIDE0Mi41LDU1LjcgMTUxLjYsNjAuMiAxNTEuNCw2NS43IDE2My41LDYwLjcgMTY4LjgsNjAuNyAxNzIuMyw1Ny4wIDE3NC41LDU3LjYgMTc1LjgsNjEuMCAxNzAuOSw2Mi43IDE2OS44LDY0LjcgMTcxLjIsNjUuOCAxNjIuNSw2OS4wIDE2MS45LDcyLjUgMTYxLjIsNjkuNiAxNjAuMiw3MC45IDE2Mi4yLDc1LjAgMTUzLjUsODEuMyAxNTUuMCw5MC43IDE0OS44LDgzLjUgMTQ1LjYsODIuOCAxNDAuNiw4My4yIDE0MC45LDg0LjcgMTMyLjcsODQuMiAxMjguOSw4Ni43IDEyOC4zLDg5LjggMTIzLjAsODQuNCAxMTguMyw4NC42IDExNC4zLDgwLjggOTcuOCw3OS42IDkyLjQsNzYuNSA4Ni41LDY3LjggODYuMCw1NS45IDg5LjMsNTcuNSA4OC45LDU0LjZaIi8+PHBhdGggZD0iTTIxLjEsMzcuMyAyMi40LDM4LjEgMTkuNSwzNy42IDIxLjEsMzcuM1oiLz48cGF0aCBkPSJNNDEuNiw0MS4wIDQzLjMsNDEuNiAzOS42LDQyLjUgNDEuNiw0MS4wWiIvPjxwYXRoIGQ9Ik02MC43LDIzLjIgNjAuNywzNy41IDY2LjIsMzkuNiA2OS4zLDM4LjMgNzcuOCw0NC4xIDc2LjksNDUuOCA3MS40LDQwLjggNjIuNCwzOC42IDUxLjIsMzYuNiA0NC4wLDM5LjIgNDUuNywzNi4wIDMzLjUsNDQuMCAyMy40LDQ2LjIgMzMuMiw0Mi41IDM1LjcsMzkuNiAyOC4wLDM5LjkgMjcuMiwzNy45IDIyLjgsMzcuMiAyMi4yLDM0LjggMjkuOSwzMi4yIDI5LjksMzAuNyAyMy40LDMxLjIgMTguNSwyOS4zIDI4LjUsMjguNyAyMS41LDI0LjUgMzYuNCwyMC43IDYwLjcsMjMuMloiLz48cGF0aCBkPSJNNDE1LjksNTQuMyA0MTIuNSw1Ny43IDQwOS40LDU3LjIgNDA4LjMsNTkuOSA0MDQuNCw2MC44IDQwNC44LDY0LjcgMzk1LjQsNjMuMyAzODYuOCw2Ny4zIDM4My44LDY2LjUgMzgxLjAsNjIuNiAzNzYuNSw2My4wIDM3MS4wLDU5LjggMzY3LjAsNjAuNyAzNjcuMSw2Ni4zIDM2MS43LDY1LjYgMzU4LjMsNjEuMyAzNjIuNSw2MC4zIDM2Mi41LDU3LjkgMzU2LjQsNTguNiAzNTIuMyw1NS41IDM1NC4wLDUyLjQgMzU1LjYsNTMuMyAzNTkuMCw1MC41IDM3NS40LDUxLjkgMzczLjMsNTAuMSAzNzYuMCw0OC42IDM3NS42LDQ3LjAgMzg3LjQsNDQuOSAzOTQuMiw0Ny44IDM5OS42LDQ2LjMgNDA0LjUsNTEuOCA0MDkuNyw1MS41IDQxNS45LDU0LjNaIi8+PHBhdGggZD0iTTM2Ny4xLDY2LjMgMzY3LjAsNjAuNyAzNzEuMCw1OS44IDM3Ni41LDYzLjAgMzgxLjAsNjIuNiAzODYuMiw2Ny4zIDM5MC40LDY0LjggMzg5LjUsNjYuMCAzOTMuNiw2Ny4wIDM4NS4zLDY4LjkgMzg1LjUsNzIuNiAzNzEuMiw2NC4xIDM2Ny4xLDY2LjNaIi8+PHBhdGggZD0iTTQ5OS4zLDEzMi45IDUwOS43LDEzOC4yIDUwOS4wLDE0MC4yIDUxNC40LDE0NS4wIDUxMC4xLDE0NC4zIDUwNS4yLDE0MC41IDQ5OS40LDE0Mi44IDQ5OS4zLDEzMi45WiIvPjxwYXRoIGQ9Ik01MTcuNCwxMzQuNSA1MTcuNywxMzYuMiA1MTQuNCwxMzMuMSA1MTcuNCwxMzQuNVoiLz48cGF0aCBkPSJNNTE1LjQsMTM3LjggNTEwLjcsMTM3LjcgNTE2LjcsMTM1LjMgNTE1LjQsMTM3LjhaIi8+PHBhdGggZD0iTTQ5OS4zLDEzMi45IDQ5OS40LDE0Mi44IDQ5NC4xLDE0MS43IDQ5NS43LDE0MC4xIDQ5NC42LDEzNy4xIDQ4Ni45LDEzNS4yIDQ4NS4zLDEzMy4yIDQ4OC4wLDEzMi4zIDQ4My4wLDEzMC40IDQ4OC40LDEzMC4xIDQ5MC43LDEzNC4xIDQ5My44LDEzMS42IDQ5OS4zLDEzMi45WiIvPjxwYXRoIGQ9Ik00NjMuNCwxMjIuNyA0NjIuNSwxMjQuMSA0NjUuMSwxMjcuNiA0NjMuMywxMjcuOCA0NjAuNywxMzUuMSA0NTEuNSwxMzMuNCA0NDkuNSwxMjguMyA0NTAuNiwxMjUuOSA0NTEuOSwxMjcuOCA0NTcuMCwxMjcuMSA0NjAuMiwxMjIuNCA0NjMuNCwxMjIuN1oiLz48cGF0aCBkPSJNNDgxLjIsMTMzLjIgNDgzLjUsMTM0LjggNDc5LjAsMTM0LjEgNDgxLjIsMTMzLjJaIi8+PHBhdGggZD0iTTQ3MS4yLDEyNy42IDQ3NC44LDEyNi44IDQ2Ni43LDEyOS44IDQ2OC4xLDEzMS4xIDQ3MS45LDEyOS45IDQ2OS4wLDEzMS45IDQ3MS42LDEzNy4xIDQ2OS4wLDEzNS45IDQ2OC4yLDEzMy4wIDQ2Ni40LDEzNy42IDQ2NC43LDEzMy4yIDQ2Ni40LDEyOC43IDQ2OC4wLDEyNy4wIDQ3MS4yLDEyNy42WiIvPjxwYXRoIGQ9Ik00NjQuMCwxNDEuNyA0NjUuMywxNDIuMiA0NjEuNiwxNDIuNyA0NjQuMCwxNDEuN1oiLz48cGF0aCBkPSJNNDQ4LjgsMTM4LjcgNDYwLjAsMTQxLjcgNDQzLjksMTM5LjQgNDQ1LjAsMTM3LjkgNDQ4LjgsMTM4LjdaIi8+PHBhdGggZD0iTTQ0Mi40LDEzMC42IDQ0NS4xLDEzMy42IDQ0NC42LDEzNy44IDQzOS42LDEzNS40IDQyOC4yLDEyMC43IDQzMS42LDEyMS4wIDQ0Mi40LDEzMC42WiIvPjxwYXRoIGQ9Ik0xNzMuMiwyMDguOCAxNzguOCwyMTIuMCAxNzMuMiwyMTIuMiAxNzMuMiwyMDguOFoiLz48cGF0aCBkPSJNMTkwLjQsMTc0LjggMTg5LjAsMTgxLjIgMTkxLjcsMTg1LjAgMTg3LjksMTg3LjcgMTgzLjAsMTg3LjkgMTgyLjQsMTkxLjIgMTc4LjcsMTkxLjMgMTgxLjMsMTkzLjUgMTc1LjMsMTk4LjEgMTc3LjksMjAwLjYgMTcyLjUsMjA1LjkgMTc0LjAsMjA4LjQgMTY4LjEsMjA3LjkgMTY1LjgsMjAzLjggMTY5LjIsMTk2LjkgMTY3LjgsMTkzLjEgMTczLjYsMTY2LjIgMTc2LjksMTYyLjEgMTc5LjksMTYzLjYgMTgyLjIsMTYyLjQgMTkwLjEsMTY3LjEgMTg4LjgsMTcwLjEgMTkzLjQsMTcwLjUgMTk1LjgsMTY3LjcgMTk2LjUsMTY5LjggMTkwLjQsMTc0LjhaIi8+PHBhdGggZD0iTTE3My4yLDIwOC44IDE3My4yLDIxMi4yIDE3NS44LDIxMi4zIDE3NC4wLDIxMy4zIDE2My45LDIwOS4xIDE2OS40LDIxMS4wIDE3My4yLDIwOC44WiIvPjxwYXRoIGQ9Ik0xNzEuNywxNTUuNiAxNzUuOCwxNjMuOCAxNzAuMywxNzYuNiAxNzEuNCwxODAuOCAxNjcuOCwxOTMuMSAxNjkuMiwxOTYuOSAxNjUuOCwyMDMuOCAxNjguMSwyMDcuOSAxNzMuMywyMDguMyAxNjguOSwyMTAuNyAxNjMuNCwyMDguMyAxNjIuNCwyMDIuOCAxNjQuNywyMDAuMiAxNjIuMywxOTkuNyAxNjYuOSwxOTMuMyAxNjQuNCwxOTQuNSAxNjUuNSwxODUuMyAxNjguOSwxNzguMiAxNzEuNywxNTUuNloiLz48cGF0aCBkPSJNMzI1LjYsMTM1LjggMzI3LjgsMTQxLjYgMzI0LjcsMTQxLjkgMzI0LjEsMTQ2LjkgMzI2LjIsMTQ5LjEgMzIyLjMsMTQ2LjYgMzE0LjUsMTQ1LjggMzEzLjgsMTQwLjAgMzA3LjIsMTQxLjIgMzA1LjQsMTM3LjkgMjk5LjAsMTM3LjggMzA0LjksMTM0LjMgMzEwLjMsMTIxLjMgMzE0LjksMTIyLjkgMzE5LjksMTIxLjAgMzI2LjIsMTIyLjAgMzI4LjUsMTI1LjYgMzI2LjUsMTI4LjEgMzI1LjYsMTM1LjhaIi8+PHBhdGggZD0iTTM0NC43LDEzMS41IDM0My43LDEyNC43IDM0OS45LDEyMS40IDM1Ni4xLDExNC42IDM1Ni4xLDExMS43IDM1OS41LDExMC43IDM1NS42LDEyMC45IDM0NC43LDEzMS41WiIvPjxwYXRoIGQ9Ik0zNDEuMCwxMzYuMSAzMzIuNywxMzAuNCAzMzQuNSwxMjYuMSAzMzIuOSwxMjIuNSAzMzQuOSwxMjAuNiAzMzkuMywxMjMuNSAzNDUuMSwxMjMuMCAzNDMuNywxMjQuNyAzNDQuNywxMzEuNSAzNDEuMCwxMzYuMVoiLz48cGF0aCBkPSJNMzE4LjIsMTE2LjUgMzE0LjEsMTA5LjkgMzE3LjIsMTA1LjMgMzE3LjEsOTguNiAzMTguOSw5OC42IDMxOC45LDk1LjYgMzM3LjMsOTUuNiAzMzkuNywxMDEuNyAzMzcuMywxMDMuMiAzMzIuOCwxMTUuOCAzMzAuOSwxMTAuNCAzMjguOCwxMTQuMSAzMTkuMCwxMTMuNCAzMTguMiwxMTYuNVoiLz48cGF0aCBkPSJNMzE3LjEsOTkuMyAzMTcuMiwxMDUuMyAzMTQuMSwxMDkuOSAzMTUuNiwxMTIuMSAzMDMuOCwxMTcuNyAzMDEuNywxMTQuNSAzMDQuMSwxMTMuOCAzMDEuMSwxMDcuMiAzMDQuNyw5OC4wIDMwMy4xLDk0LjMgMzA0LjcsOTMuNCAzMTcuMSw5OS4zWiIvPjxwYXRoIGQ9Ik0xNjguNCw5OS4xIDE2OC41LDEwMS42IDE2NC4yLDEwMS4xIDE2Ny41LDEwMC42IDE2Ni4xLDk4LjcgMTY4LjQsOTkuMVoiLz48cGF0aCBkPSJNMTY4LjUsMTAxLjYgMTY4LjYsOTguOCAxNzMuNywxMDAuNyAxNjguNSwxMDEuNloiLz48cGF0aCBkPSJNMzU2LjQsNTguNiAzNTIuNiw2MS4zIDM1NS42LDY1LjUgMzU0LjQsNjYuNSAzMzcuMSw2MC4zIDM0MC45LDU3LjYgMzM5LjUsNTYuOCAzNDEuOCw1Ni4zIDM0Mi4zLDUzLjcgMzM1LjAsNTIuMiAzMzIuNSw0OS42IDMyOS40LDQ5LjkgMzI4LjcsNDguNCAzMzAuOSw0OC4wIDMyOC4wLDQ0LjcgMzIyLjQsNDEuOCAzMjUuMywzNy45IDMyMy43LDM3LjIgMzI5LjAsMzMuNiAzMjYuNywzMi41IDMyNy4wLDI5LjEgMzI1LjIsMjcuNCAzMjYuNiwyNi4zIDMyNC41LDI0LjIgMzMwLjAsMjIuOSAzNDMuOSwyNi42IDMzOS43LDI4LjggMzMxLjYsMjcuOSAzMzcuNiwzMi4xIDMzNy44LDMwLjEgMzQxLjYsMzEuMSAzNDUuNSwyOC4xIDM0OC40LDI4LjcgMzQ3LjYsMjQuOSAzNTEuOSwyNS40IDM1Mi4xLDI3LjggMzYzLjYsMjQuNSAzNzMuMiwyNS40IDM3NS4wLDI0LjQgMzc0LjIsMjMuMCAzODYuNiwyNS43IDM4Ny42LDI0LjkgMzg0LjEsMjMuNiAzODMuNywyMS4yIDM4OC44LDE4LjEgMzkzLjIsMTkuNCAzOTEuOCwyMC42IDM5NC42LDI1LjIgMzkwLjksMjguMyAzOTIuNywyOC42IDM5Ni43LDI2LjIgMzkzLjcsMjAuNiAzOTYuMSwxOC41IDM5OC44LDIxLjAgMzk4LjEsMTkuOSA0MDAuNywxOS4zIDQwNi44LDIwLjEgNDA1LjIsMTcuMiA0NDIuMywxMS4xIDQ1Ny41LDEzLjkgNDUwLjIsMTYuNCA0NzcuNSwxNy4zIDQ4NC4yLDIxLjYgNDg1LjcsMjAuMCA0OTcuNiwyMC41IDQ5Ni41LDE5LjEgNDk4LjUsMTguNCA1MjcuMywyMS40IDUzMC40LDIzLjYgNTQzLjgsMjQuNyA1NDUuNywyNC4zIDU0NS4xLDIyLjYgNTYwLjAsMjQuMyA1NjAuMCwzMC40IDU1Ni4wLDMwLjkgNTU4LjgsMzQuNCA1NTAuMiwzNS40IDU0NS4wLDM4LjEgNTM0LjQsMzguMSA1MzIuMCw0MC42IDUzMy45LDQxLjUgNTMyLjIsNDUuNyA1MjMuOSw1MS42IDUyMi41LDQyLjggNTM1LjgsMzQuMSA1MjkuMSwzNy4xIDUyNy44LDM1LjIgNTIzLjgsMzUuOCA1MTkuOSwzOC4zIDUyMS4yLDM5LjIgNTAxLjIsMzkuNCA0OTAuMiw0NS45IDQ5OS45LDQ4LjQgNDk3LjksNTUuNSA0ODkuOCw2My4xIDQ4My40LDY0LjkgNDgzLjgsNjAuNyA0ODcuMCw2MC41IDQ5MC4wLDU1LjQgNDgzLjgsNTYuNSA0NzguNiw1My41IDQ3NS45LDQ4LjkgNDcyLjIsNDcuOSA0NjYuOSw0OC45IDQ2Ny44LDUwLjEgNDYzLjQsNTMuOCA0NTcuOSw1Mi43IDQ0OC43LDU0LjIgNDMzLjgsNTAuMCA0MzEuMyw1My41IDQyMy41LDUxLjkgNDE1LjksNTQuMyA0MDkuNyw1MS41IDQwNC41LDUxLjggMzk5LjYsNDYuMyAzOTQuMiw0Ny44IDM4Ny40LDQ0LjkgMzc1LjYsNDcuMCAzNzYuMCw0OC42IDM3My4zLDUwLjEgMzc1LjQsNTEuOSAzNTkuMCw1MC41IDM1NS42LDUzLjMgMzU0LjAsNTIuNCAzNTIuMyw1NS41IDM1Ni40LDU4LjZaIi8+PHBhdGggZD0iTTQyNS45LDYuMCA0MzUuOCw3LjkgNDMyLjEsOS41IDQyMS44LDcuMSA0MjUuOSw2LjBaIi8+PHBhdGggZD0iTTQ0MC4wLDguNyA0NDMuOSw5LjUgNDM0LjcsMTAuNyA0NDAuMCw4LjdaIi8+PHBhdGggZD0iTTQ5Ni4wLDEzLjQgNTA1LjcsMTQuMyA0OTMuMSwxNC44IDQ5Ni4wLDEzLjRaIi8+PHBhdGggZD0iTTUxMC42LDE0LjYgNTE0LjUsMTUuMCA1MDcuMywxNC45IDUxMC42LDE0LjZaIi8+PHBhdGggZD0iTTMxNS40LDQ2LjUgMzEwLjYsNDYuNCAzMTMuMSw0NS4yIDMxNS40LDQ2LjVaIi8+PHBhdGggZD0iTTM2My4yLDE3LjEgMzc1LjIsMTMuMyAzODcuMSwxMi44IDM3MS4wLDE2LjIgMzY2LjIsMTkuMiAzNjkuNSwyMS43IDM2MC4zLDIwLjUgMzY0LjcsMTcuMyAzNjMuMiwxNy4xWiIvPjxwYXRoIGQ9Ik01MDIuMyw0Ny41IDUwNS4wLDU0LjcgNTAyLjcsNTQuMiA1MDMuMiw1OS4wIDUwMS4wLDU5LjIgNTAwLjQsNDguMSA1MDIuMyw0Ny41WiIvPjxwYXRoIGQ9Ik03LjksMjcuMCAxNS43LDI4LjkgMTEuNiwyOS43IDExLjAsMzEuNSAyLjAsMjguNyAwLjAsMzAuNCAwLjAsMjQuMyA3LjksMjcuMFoiLz48cGF0aCBkPSJNMi4wLDIxLjQgMC4wLDIwLjUgMy44LDIwLjggMi4wLDIxLjRaIi8+PHBhdGggZD0iTTMzMi4wLDU5LjIgMzM2LjgsNjAuMCAzMzIuNyw2MS43IDMzMC41LDYwLjIgMzMyLjAsNTkuMloiLz48cGF0aCBkPSJNMzAzLjYsOC4xIDMxMy41LDkuMiAzMDQuOCwxMi41IDI5Ni4yLDguMSAzMDMuNiw4LjFaIi8+PHBhdGggZD0iTTMyOC40LDIzLjQgMzI0LjUsMjQuMiAzMjMuMSwyMi41IDMxOC41LDI0LjggMzA4LjAsMjQuOSAyOTkuNiwzMS44IDI5OS4xLDM3LjggMjk3LjIsMzkuNyAyODguOCw0MC4xIDI4Ny44LDM0LjkgMzA5LjgsMjMuMCAzMjMuOCwyMS4wIDMyOC43LDIyLjEgMzI2LjcsMjIuNSAzMjguNCwyMy40WiIvPjxwYXRoIGQ9Ik0yMDcuMywzLjYgMjM3LjgsMi4yIDI0Ny42LDMuNCAyMzAuNCw0LjIgMjYxLjAsNS42IDI0OC44LDcuMyAyNTIuNCw3LjQgMjQ5LjMsOS41IDI1MS4zLDEyLjIgMjQ2LjMsMTIuNyAyNDkuMSwxMy41IDI0Ny44LDE0LjkgMjQ5LjksMTYuMiAyNDMuMywxNy43IDI0NS4zLDE5LjQgMjQxLjQsMTkuMiAyNDYuMiwyMS44IDI0MC4zLDIwLjYgMjM5LjAsMjIuNCAyNDUuMiwyMi42IDIxOC4xLDI5LjYgMjEzLjQsMzMuOSAyMTIuNSwzNy44IDIwNC45LDM2LjYgMTk5LjcsMzIuNCAxOTYuMCwyNy4wIDIwMC45LDIyLjkgMTk0LjksMjMuNCAxOTUuNCwyMS41IDIwMC4xLDIxLjkgMTkzLjEsMjAuMiAxOTQuOSwxOC44IDE4OC45LDE0LjQgMTczLjQsMTMuNiAxNjguOSwxMi4xIDE3Ni4xLDExLjYgMTY2LjAsMTAuNiAxNzcuOCw4LjUgMTc0LjIsNy40IDE4Mi41LDQuOSAyMTAuNyw1LjEgMjA3LjMsMy42WiIvPjxwYXRoIGQ9Ik0zODcuMiwyMDIuNyAzODkuOCwyMDMuNyAzODYuOSwyMDQuNSAzODcuMiwyMDIuN1oiLz48cGF0aCBkPSJNMzA1LjQsMTcyLjMgMzEwLjksMTcyLjEgMzEwLjksMTY2LjUgMzEzLjYsMTY5LjUgMzE2LjMsMTY3LjMgMzE5LjksMTY3LjYgMzI1LjgsMTYyLjUgMzI4LjUsMTYyLjcgMzI5LjcsMTY1LjkgMzI3LjcsMTY5LjUgMzMxLjEsMTY5LjUgMzIzLjksMTc4LjcgMzExLjIsMTgxLjggMzA4LjYsMTgwLjggMzA1LjQsMTcyLjNaIi8+PHBhdGggZD0iTTMyNS4xLDE3Mi45IDMyMy43LDE3NS4zIDMyMi4wLDE3NC4zIDMyNS4xLDE3Mi45WiIvPjxwYXRoIGQ9Ik05Ny44LDc5LjYgMTE0LjMsODAuOCAxMTguMyw4NC42IDEyMS45LDgzLjggMTI2LjAsODkuMCAxMjguOSw4OS43IDEyNy44LDk0LjkgMTMwLjgsMTAwLjQgMTM3LjgsMTAwLjMgMTM5LjYsOTcuMSAxNDQuNiw5Ni4zIDE0My40LDEwMS4zIDEzOC40LDEwMS45IDEzOS4zLDEwNC42IDEzNy4zLDEwNC42IDEzNi41LDEwNi45IDEzNC4wLDEwNC44IDEyOS44LDEwNS4yIDExOS4wLDEwMS4yIDEwNC4wLDgxLjcgMTAxLjIsODEuMyAxMDkuMSw5NC4zIDEwMS4wLDg2LjkgMTAyLjQsODUuNiA5Ny44LDc5LjZaIi8+PHBhdGggZD0iTTE5MC40LDE3NC44IDE5Ni4zLDE3Ny42IDE5Ni4zLDE4MS4yIDE4OS4xLDE4MC40IDE5MC40LDE3NC44WiIvPjxwYXRoIGQ9Ik0xOTcuMCwxODAuMiAxOTYuMywxNzcuNiAxOTAuNCwxNzQuOCAxOTYuNiwxNjguNiAxOTMuMiwxNjIuOSAxODkuOSwxNjIuNSAxODkuNCwxNTMuNyAxODYuNCwxNTMuNiAxODUuOSwxNDkuOSAxNzguMywxNDYuNSAxNzguNCwxNDMuOCAxNzAuMywxNDUuNyAxNzAuNCwxNDMuNCAxNjcuNywxNDQuMiAxNjQuOSwxNDAuNCAxNjYuNiwxMzcuMCAxNzEuMywxMzUuNSAxNzEuNCwxMjYuNCAxNzQuOSwxMjUuOSAxNzguMCwxMjcuOCAxODEuNCwxMjUuNiAxNzkuMiwxMjIuOCAxODUuNSwxMjEuMSAxODguMiwxMjcuMCAxOTcuNiwxMjUuNyAyMDAuMiwxMjIuNiAyMDIuMywxMjYuMyAyMDEuNiwxMjkuMSAyMTAuMSwxMzEuMyAyMTAuNywxMzMuMCAyMTcuOCwxMzMuMyAyMjQuNiwxMzYuOCAyMjYuMCwxNDAuMSAyMTkuOCwxNDguOCAyMTYuMywxNjIuMiAyMDUuOSwxNjYuNyAyMDQuMCwxNzIuNSAxOTcuMCwxODAuMloiLz48cGF0aCBkPSJNMTcxLjgsMTQ1LjYgMTc4LjQsMTQzLjggMTc4LjMsMTQ2LjUgMTg1LjksMTQ5LjkgMTg2LjQsMTUzLjYgMTg5LjQsMTUzLjcgMTkwLjAsMTU5LjMgMTgzLjksMTU4LjggMTgyLjUsMTYyLjcgMTc2LjksMTYyLjEgMTc0LjUsMTYzLjcgMTcxLjcsMTU1LjYgMTczLjIsMTQ4LjAgMTcxLjgsMTQ1LjZaIi8+PHBhdGggZD0iTTE3MS4zLDEzNS41IDE2Ni42LDEzNy4wIDE2NC45LDE0MC40IDE2Ny43LDE0NC4yIDE3MC40LDE0My40IDE3MC4zLDE0NS43IDE3My4yLDE0OC4wIDE3Mi43LDE1NC4wIDE3MC41LDE1Ni44IDE2MS44LDE1MS4yIDE1My40LDEzNi4yIDE1NS4xLDEzNC4xIDE1NC45LDEzNS43IDE1Ny43LDEzNS45IDE2My4yLDEyOS4xIDE2Ni4zLDEzMi41IDE3MS4wLDEzMy4xIDE3MS4zLDEzNS41WiIvPjxwYXRoIGQ9Ik0xNzYuMCwxMjcuMSAxNzEuNCwxMjYuNCAxNzEuMywxMzUuNSAxNzEuMCwxMzMuMSAxNjYuMywxMzIuNSAxNjMuMiwxMjkuMSAxNTkuNiwxMjguNCAxNTcuMSwxMjYuNCAxNjAuMCwxMjMuMSAxNTkuNSwxMTYuMCAxNjMuNSwxMTIuMSAxNjguOSwxMTAuMiAxNjYuMCwxMTUuMSAxNjguMSwxMTguNCAxNzUuMiwxMTkuNyAxNzQuNSwxMjQuNyAxNzYuMCwxMjcuMVoiLz48cGF0aCBkPSJNMTU5LjcsMTE1LjggMTU4LjksMTE4LjAgMTU2LjksMTE1LjMgMTU0LjIsMTE4LjAgMTUxLjEsMTE2LjcgMTUxLjAsMTE0LjYgMTU5LjcsMTE1LjhaIi8+PHBhdGggZD0iTTE1MS42LDExNC41IDE1MC45LDExNi41IDE0Ni4zLDExMi40IDE0OS45LDExMi40IDE1MS42LDExNC41WiIvPjxwYXRoIGQ9Ik0xNDkuOSwxMTIuNCAxNDMuNiwxMDkuNCAxNTAuNywxMDYuMiAxNDkuOSwxMTIuNFoiLz48cGF0aCBkPSJNMTUwLjcsMTA2LjIgMTQ0LjIsMTA5LjMgMTQxLjAsMTA3LjEgMTQzLjMsMTA0LjkgMTUwLjcsMTA2LjJaIi8+PHBhdGggZD0iTTE0MS4wLDEwNy4xIDE0My4zLDEwOS4wIDEzOS45LDEwOC4xIDE0MS4wLDEwNy4xWiIvPjxwYXRoIGQ9Ik0xMzYuNSwxMDYuOSAxMzcuMywxMDQuNiAxMzkuMywxMDQuNiAxMzguNCwxMDEuOSAxNDEuMywxMDEuOSAxNDEuMiwxMDQuOSAxNDIuOCwxMDUuMSAxNDEuMCwxMDcuMSAxMzYuNSwxMDYuOVoiLz48cGF0aCBkPSJNMTQxLjMsMTAxLjkgMTQyLjksMTAxLjEgMTQxLjcsMTA0LjkgMTQxLjMsMTAxLjlaIi8+PHBhdGggZD0iTTE4NS41LDEyMS4xIDE3OS4yLDEyMi44IDE4MS40LDEyNS42IDE3Ni44LDEyNy45IDE3NC41LDEyNC43IDE3NS4yLDExOS43IDE2OC4xLDExOC40IDE2Ni42LDExMy4xIDE2OS4wLDExMS4xIDE2Ny45LDExNC4wIDE2OS4xLDExNS4xIDE2OC45LDExMi4zIDE3MS4yLDExMC41IDE3My45LDExMy4wIDE4My43LDExMi43IDE4Mi40LDExMy4yIDE4Ny4wLDExNi4zIDE4NC41LDExOS45IDE4NS41LDEyMS4xWiIvPjxwYXRoIGQ9Ik0xOTIuMCwxMjYuMSAxODcuMiwxMjYuMyAxODYuNywxMjEuNCAxODQuNSwxMTkuOSAxODcuMCwxMTYuMyAxOTEuMSwxMTkuOSAxODkuNywxMjIuOCAxOTIuMCwxMjYuMVoiLz48cGF0aCBkPSJNMTk1LjIsMTI1LjUgMTkyLjAsMTI2LjEgMTkwLjQsMTIzLjkgMTkxLjEsMTE5LjkgMTk2LjEsMTIwLjIgMTk1LjIsMTI1LjVaIi8+PHBhdGggZD0iTTE5OS42LDEyMi43IDE5Ny42LDEyNS43IDE5NS4yLDEyNS41IDE5Ni4xLDEyMC4yIDE5OS42LDEyMi43WiIvPjxwYXRoIGQ9Ik0yODkuNiw1My45IDI5Mi42LDU0LjYgMjg5LjQsNTguMSAyOTEuNiw2Mi43IDI4Mi44LDY0LjcgMjc3LjAsNjMuMSAyNzguMSw1OS4xIDI3Mi45LDU1LjEgMjc3LjUsNTUuMiAyNzcuMCw1My40IDI4My45LDUxLjQgMjg5LjYsNTMuOVoiLz48cGF0aCBkPSJNMTYyLjgsMTI5LjIgMTU3LjcsMTM1LjkgMTU0LjksMTM1LjcgMTU1LjQsMTI3LjggMTU3LjMsMTI2LjkgMTYyLjgsMTI5LjJaIi8+PHBhdGggZD0iTTE1OS4zLDEwMC45IDE2MS41LDEwMS44IDE1OC4xLDEwMS4zIDE1OS4zLDEwMC45WiIvPjxwYXRoIGQ9Ik0xNTIuMCw5My44IDE2NC42LDk4LjIgMTU5LjAsOTguOCAxNjAuMSw5OC4wIDE1Ny41LDk2LjIgMTUyLjgsOTQuNiAxNDcuOCw5NS43IDE1Mi4wLDkzLjhaIi8+PHBhdGggZD0iTTMyOC41LDE2Mi43IDMyMy42LDE2MS42IDMxOS4zLDE1NS45IDMyMi4xLDE1Ni4yIDMyNy4xLDE1Mi41IDMzMS4xLDE1NC4zIDMzMC44LDE1OS44IDMyOC41LDE2Mi43WiIvPjxwYXRoIGQ9Ik0zMjUuOCwxNjIuNSAzMTkuOSwxNjcuNiAzMTYuMywxNjcuMyAzMTMuNiwxNjkuNSAzMTAuOSwxNjYuNSAzMTIuNSwxNTYuNyAzMTkuMywxNTUuOSAzMjUuOCwxNjIuNVoiLz48cGF0aCBkPSJNMzEwLjksMTY2LjUgMzEwLjksMTcyLjEgMzA1LjQsMTcyLjMgMjk4LjMsMTU1LjIgMzE5LjAsMTU1LjYgMzEyLjUsMTU2LjcgMzEwLjksMTY2LjVaIi8+PHBhdGggZD0iTTI1NC4wLDEwOC4zIDI1Mi42LDEwNi42IDI1Ny4zLDEwMy44IDI2Mi4xLDExMC4xIDI1NC4xLDExMC4yIDI1OC41LDEwOC41IDI1NC4wLDEwOC4zWiIvPjxwYXRoIGQ9Ik0yNjIuMSwxMTAuMSAyNjEuOSwxMDUuNiAyNzEuNCwxMDUuNCAyNzAuMCw5MS4xIDI4Ni42LDk5LjkgMjg1LjcsMTA1LjMgMjczLjgsMTA4LjUgMjcxLjYsMTEzLjIgMjY3LjUsMTEzLjUgMjY1LjgsMTEwLjMgMjYyLjEsMTEwLjFaIi8+PHBhdGggZD0iTTI1My41LDk3LjEgMjU5LjksOTYuNiAyNjEuNCw4OS42IDI2Ni41LDg5LjcgMjY2LjUsODcuNCAyNzIuMyw5MS4xIDI3MC4wLDkxLjEgMjcxLjQsMTA1LjQgMjYxLjEsMTA2LjggMjU3LjMsMTAzLjggMjU0LjQsMTA0LjUgMjUzLjUsOTcuMVoiLz48cGF0aCBkPSJNMjg0LjIsMTE5LjUgMjgyLjksMTE5LjYgMjgxLjIsMTEzLjEgMjg0LjQsMTEwLjQgMjg1LjksMTEyLjcgMjg0LjIsMTE5LjVaIi8+PHBhdGggZD0iTTMwMy4xLDk0LjMgMzA0LjcsOTguMCAzMDEuMSwxMDcuMiAzMDIuMSwxMTAuMCAzMDAuNCwxMDguMyAyOTQuMCwxMDkuNSAyODguNSwxMDcuOSAyODYuNCwxMDguNCAyODUuNiwxMTEuMyAyODEuNiwxMDkuNSAyODAuNiwxMDYuMyAyODUuNywxMDUuMyAyODYuNiw5OS45IDI5OC43LDkzLjQgMzAzLjEsOTQuM1oiLz48cGF0aCBkPSJNMjg0LjIsMTE5LjUgMjg2LjgsMTA4LjEgMjk0LjAsMTA5LjUgMzAwLjQsMTA4LjMgMzAyLjcsMTEwLjYgMjk4LjMsMTE4LjQgMjk0LjQsMTE5LjIgMjkzLjIsMTIxLjcgMjg5LjIsMTIyLjUgMjg2LjcsMTE5LjUgMjg0LjIsMTE5LjVaIi8+PHBhdGggZD0iTTMwMi41LDEwOS41IDMwNC4xLDExMy44IDMwMS43LDExNC41IDMwNC4wLDExNy4zIDMwMi41LDEyMS44IDMwNC44LDEyNi4zIDI5NS4wLDEyNS41IDI5My42LDEyMC43IDI5OC4zLDExOC40IDMwMi41LDEwOS41WiIvPjxwYXRoIGQ9Ik0yODEuNCwxMTIuMyAyODIuOSwxMTkuNiAyODEuNiwxMjAuMCAyNzkuOSwxMTIuNyAyODEuNCwxMTIuM1oiLz48cGF0aCBkPSJNMjgwLjAsMTEyLjIgMjgxLjYsMTIwLjAgMjc1LjYsMTIxLjQgMjc1LjQsMTEyLjMgMjgwLjAsMTEyLjJaIi8+PHBhdGggZD0iTTI2Ny41LDExMy41IDI3NS42LDExNC4zIDI3NS42LDEyMS40IDI2OC4wLDEyMi4zIDI2Ni42LDExOS4yIDI2Ny41LDExMy41WiIvPjxwYXRoIGQ9Ik0yNTguNywxMDkuOSAyNjUuOCwxMTAuMyAyNjcuMSwxMTcuMyAyNjMuNywxMTYuMyAyNjIuNywxMTMuNyAyNTkuNCwxMTUuNSAyNTYuNSwxMTIuMiAyNTguNywxMDkuOVoiLz48cGF0aCBkPSJNMjU0LjEsMTEwLjIgMjU4LjYsMTExLjAgMjU2LjUsMTEyLjIgMjU0LjEsMTEwLjJaIi8+PHBhdGggZD0iTTI2Ni45LDExNy4zIDI2OC4wLDEyMi4zIDI2Mi4yLDExOC43IDI2NC4xLDExNi4yIDI2Ni45LDExNy4zWiIvPjxwYXRoIGQ9Ik0yNTkuNCwxMTUuNSAyNjIuNywxMTMuNyAyNjQuMSwxMTYuMiAyNjIuMiwxMTguNyAyNTkuNCwxMTUuNVoiLz48cGF0aCBkPSJNMjcxLjYsMTEzLjIgMjczLjMsMTA4LjkgMjc4LjMsMTA2LjIgMjgwLjYsMTA2LjMgMjgzLjQsMTA5LjggMjgxLjQsMTEyLjMgMjc1LjQsMTEyLjMgMjc1LjYsMTE0LjMgMjcxLjYsMTEzLjJaIi8+PHBhdGggZD0iTTMyMi42LDEyMS4wIDMxNC45LDEyMi45IDMxMC4zLDEyMS4zIDMwNC45LDEyNS41IDMwMi41LDEyMC43IDMwMy44LDExNy43IDMxNS42LDExMi4xIDMxNi41LDExNS40IDMyMi42LDEyMS4wWiIvPjxwYXRoIGQ9Ik0zMDguNywxMjMuNiAzMDQuOSwxMzQuMyAzMDIuNywxMzYuNSAyOTguNSwxMzYuNiAyOTcuOSwxMzMuMiAzMDEuOCwxMzIuNyAzMDIuNCwxMzEuMCAzMDAuMywxMjUuNSAzMDQuOCwxMjYuMyAzMDYuNywxMjMuMyAzMDguNywxMjMuNloiLz48cGF0aCBkPSJNMjk3LjUsMTI1LjUgMzAyLjIsMTI3LjEgMzAyLjQsMTMxLjAgMjk3LjMsMTM1LjAgMjkzLjcsMTMwLjcgMjk3LjUsMTI1LjVaIi8+PHBhdGggZD0iTTI5NS4wLDEyNS41IDI5Ny41LDEyNS41IDI5Ny42LDEyNy40IDI5NC44LDEyNy40IDI5NS4wLDEyNS41WiIvPjxwYXRoIGQ9Ik0zMjcuOCwxNDEuNiAzMzEuNywxNDMuNiAzMzEuNywxNTAuMiAzMjYuOSwxNTEuNCAzMjIuMSwxNTYuMiAzMTYuMSwxNTUuNiAzMTQuMCwxNTMuNCAzMTQuMSwxNDguNSAzMTcuNCwxNDguNiAzMTcuMiwxNDUuNSAzMjYuMiwxNDkuMSAzMjQuMSwxNDYuOSAzMjQuMywxNDIuOSAzMjcuOCwxNDEuNloiLz48cGF0aCBkPSJNMzMxLjAsMTQzLjAgMzMzLjMsMTQ0LjQgMzM1LjUsMTUxLjEgMzM0LjUsMTU0LjUgMzMzLjYsMTUxLjEgMzMwLjgsMTQ5LjggMzMxLjAsMTQzLjBaIi8+PHBhdGggZD0iTTMzMy44LDE0Ni40IDM0Mi43LDE0NC42IDM0My40LDE1MS4zIDMzNC4xLDE1OS4wIDMzNS4yLDE2NS42IDMyOS45LDE2OS41IDMyOC41LDE2Mi43IDMzMC44LDE1OS44IDMzMS4xLDE1NC4zIDMyNy4yLDE1My4xIDMyNi45LDE1MS40IDMzMS43LDE1MC4yIDMzNC41LDE1NC41IDMzNS41LDE1MS4xIDMzMy44LDE0Ni40WiIvPjxwYXRoIGQ9Ik0zMjkuOSwxNjkuNSAzMjcuNywxNjkuMCAzMjguNywxNjcuOSAzMjkuOSwxNjkuNVoiLz48cGF0aCBkPSJNMjk5LjIsMTM4LjIgMzA1LjQsMTM3LjkgMzA3LjIsMTQxLjIgMzEzLjgsMTQwLjAgMzE0LjUsMTQ1LjggMzE3LjQsMTQ2LjAgMzE3LjQsMTQ4LjYgMzE0LjEsMTQ4LjUgMzE0LjAsMTUzLjQgMzE2LjEsMTU1LjYgMjk4LjMsMTU1LjIgMzAxLjQsMTQ2LjEgMjk5LjIsMTM4LjJaIi8+PHBhdGggZD0iTTMyNy40LDEzMi42IDMyNS42LDEzNS44IDMyNS4xLDEzMy4zIDMyNy40LDEzMi42WiIvPjxwYXRoIGQ9Ik0zMzUuNiw3OS4zIDMzNC4zLDg0LjIgMzMzLjMsODEuNiAzMzUuNiw3OS4zWiIvPjxwYXRoIGQ9Ik0zNTcuMSwxNDcuOSAzNTguNCwxNTIuOCAzNTMuMywxNjYuOCAzNTAuNiwxNjcuOCAzNDcuNCwxNjMuNSAzNDguNCwxNTUuNCAzNTcuMSwxNDcuOVoiLz48cGF0aCBkPSJNMjk0LjcsODMuMCAyOTEuNyw3Ny4yIDI5NC44LDcyLjMgMjk3LjIsNzIuNyAyOTUuOCw3Ni45IDI5Ny45LDc4LjcgMjk0LjcsODMuMFoiLz48cGF0aCBkPSJNMjY2LjUsODcuNCAyNjYuNSw4NS4yIDI3OC4wLDgwLjAgMjc2LjYsNzUuNiAyNzguMSw3NC44IDI5My4xLDcyLjkgMjkxLjcsNzcuMiAyOTUuMyw4NC4zIDI5NC41LDg5LjQgMjk4LjcsOTMuNCAyODQuOSwxMDAuMSAyNjYuNSw4Ny40WiIvPjxwYXRoIGQ9Ik0zMzUuMyw3OS44IDM0MC4zLDc4LjMgMzQxLjAsODAuMiAzMzcuNiw4MS4yIDMzOS4xLDgyLjcgMzM2LjEsODQuNyAzMzQuMyw4NC4yIDMzNS4zLDc5LjhaIi8+PHBhdGggZD0iTTM2MC4yLDkyLjIgMzY0LjAsOTIuNCAzNjcuNSw5MC4wIDM2NS42LDk0LjggMzYwLjksOTQuMSAzNjAuMiw5Mi4yWiIvPjxwYXRoIGQ9Ik0zNTQuNiw4My41IDM1NS4zLDg1LjYgMzUyLjQsODQuOCAzNTQuNiw4My41WiIvPjxwYXRoIGQ9Ik0zNDEuMCw4MC4yIDM0MC4zLDc4LjMgMzQzLjgsNzYuNyAzNDQuMiw3My44IDM0OS42LDcyLjYgMzUxLjcsNzQuOCAzNTAuNiw3Ny40IDM1NS42LDgzLjYgMzQ5LjUsODQuNyAzNDEuMCw4MC4yWiIvPjxwYXRoIGQ9Ik0zNjUuOSw5NC41IDM2Ny43LDkxLjEgMzczLjAsOTUuMSAzNjkuNywxMDAuMiAzNjIuNiwxMDMuNyAzNjAuOSwxMDAuMSAzNjUuNiw5OC42IDM2NS45LDk0LjVaIi8+PHBhdGggZD0iTTQzOS42LDExMC41IDQ0MC4yLDEwNy40IDQ0NS43LDEwNi45IDQ0Ny40LDEwOC40IDQ0NS4zLDExMi4zIDQ0MS4wLDExMi44IDQzOS42LDExMC41WiIvPjxwYXRoIGQ9Ik00NDMuNywxMDcuMyA0NDAuMiwxMDcuNCA0MzkuNiwxMTAuNSA0MzUuNywxMDguNiA0MzQuMywxMTQuOSA0MzguNCwxMjAuMSA0MzMuMCwxMTcuMSA0MzQuOSwxMTAuOSA0MzEuNSwxMDEuMCA0MzIuOCw5OS4xIDQzNi40LDk4LjUgNDM3LjIsMTAyLjQgNDQxLjcsMTAxLjMgNDQzLjcsMTA3LjNaIi8+PHBhdGggZD0iTTQ0Ny4wLDEwNy40IDQ0My43LDEwNy4zIDQ0MS43LDEwMS4zIDQzNy4yLDEwMi40IDQzNy41LDk5LjQgNDM1LjcsOTguMCA0MzguNCw5Ni44IDQzOC4xLDk1LjEgNDQyLjUsOTcuNSA0NDEuNiw5OS43IDQ0Ni45LDEwNC44IDQ0Ny4wLDEwNy40WiIvPjxwYXRoIGQ9Ik00MzUuNyw5OC4wIDQzMS41LDEwMS4wIDQzNC45LDExMC45IDQzMy4zLDExMy45IDQzMS4xLDEwMy4zIDQyNi41LDEwNC42IDQyNi43LDEwMS4zIDQyMy42LDk2LjQgNDMxLjQsODYuMSA0MzMuNSw4Ny4yIDQzMS44LDkyLjcgNDM3LjMsOTUuOCA0MzUuNyw5OC4wWiIvPjxwYXRoIGQ9Ik00NDIuMywxMTMuMSA0NDcuMiwxMTAuMiA0NDcuMywxMDUuOSA0NDEuNiw5OS43IDQ0Mi41LDk3LjUgNDM4LjksOTQuOSA0NDMuOCw5My41IDQ0OC4xLDk2LjMgNDQ0LjQsMTAwLjAgNDQ5LjQsMTA1LjggNDQ5LjksMTExLjMgNDQzLjYsMTE1LjkgNDQyLjMsMTEzLjFaIi8+PHBhdGggZD0iTTQ4My4yLDY0LjYgNDc4LjQsNjguNiA0NzkuNCw3MC43IDQ3NC4wLDcxLjEgNDc0LjYsNjcuNCA0ODMuMiw2NC42WiIvPjxwYXRoIGQ9Ik00NzYuMyw3MS43IDQ3OS43LDcwLjQgNDgwLjgsNzUuNyA0NzYuOCw3Ni44IDQ3Ni4zLDcxLjdaIi8+PHBhdGggZD0iTTQxNi41LDU0LjIgNDIzLjUsNTEuOSA0MzEuMyw1My41IDQzMy44LDUwLjAgNDQ4LjcsNTQuMiA0NjEuNSw1My4zIDQ2MC4wLDU2LjYgNDY2LjMsNTcuNiA0NTQuMCw2MC41IDQ1MS44LDYzLjkgNDQzLjMsNjUuOSA0MjkuOSw2NC4xIDQyOC4zLDYxLjggNDIxLjUsNjAuMyA0MjEuNSw1Ny44IDQxNi41LDU0LjJaIi8+PHBhdGggZD0iTTQzMS40LDg2LjEgNDI0LjIsOTUuNSA0MjEuOCw5My4zIDQyMy43LDkxLjEgNDE3LjgsODguOCA0MTguMyw5Ni4xIDQxNS4zLDk2LjQgNDA0LjksMTA0LjggNDA0LjIsMTEzLjMgNDAwLjYsMTE2LjkgMzk0LjQsMTA0LjcgMzkzLjAsOTYuNiAzODkuNiw5Ny4zIDM4Ni4xLDkzLjAgMzkwLjUsOTIuMCAzODguMSw4OC4xIDM5MS43LDg2LjYgMzk3LjEsODAuMCAzOTQuNyw3Ni45IDQwMS4xLDc1LjEgNDAyLjgsNzYuOSA0MDIuNSw4MS4xIDQwNi4yLDgzLjIgNDA0LjYsODUuMyA0MDkuNiw4Ny40IDQxNy4wLDg4LjkgNDE4LjAsODYuNCA0MTkuNiw4OC40IDQyMy4yLDg4LjIgNDIyLjYsODYuOCA0MjkuNSw4NC4zIDQzMS40LDg2LjFaIi8+PHBhdGggZD0iTTQyNC4yLDk1LjUgNDIzLjcsOTcuNiA0MjIuMiw5NC40IDQxOC41LDk1LjUgNDE3LjgsODguOCA0MjMuNyw5MS4xIDQyMS44LDkzLjMgNDI0LjIsOTUuNVoiLz48cGF0aCBkPSJNNDIyLjYsODYuOCA0MjMuMiw4OC4yIDQxOC4yLDg3LjggNDIwLjAsODYuMCA0MjIuNiw4Ni44WiIvPjxwYXRoIGQ9Ik00MTcuMSw4Ni43IDQxNS43LDg4LjkgNDA0LjYsODUuMyA0MDYuOCw4Mi44IDQxNy4xLDg2LjdaIi8+PHBhdGggZD0iTTQwMS4xLDc1LjEgMzk0LjcsNzYuOSAzOTcuMSw4MC4wIDM5MS43LDg2LjYgMzg4LjEsODguMSAzOTAuNSw5Mi4wIDM4Ni4xLDkzLjAgMzgzLjIsOTAuNCAzNzUuNyw5MC45IDM3OC41LDg4LjQgMzc0LjcsODMuNyAzODMuMiw4My42IDM4NC4xLDgxLjUgMzg3LjgsODAuNiAzOTEuOCw3My42IDM5Ni45LDcyLjYgNDAxLjEsNzUuMVoiLz48cGF0aCBkPSJNMzgzLjUsNzIuMyAzODcuNiw3Mi42IDM5MC4xLDcwLjYgMzkxLjgsNzMuMiAzOTYuOSw3Mi42IDM5MC45LDc0LjIgMzg3LjgsODAuNiAzODQuMSw4MS41IDM4My4yLDgzLjYgMzc0LjcsODMuNyAzNzYuMSw4Mi4zIDM3NC4yLDc4LjkgMzc1LjIsNzQuOSAzODMuNSw3Mi4zWiIvPjxwYXRoIGQ9Ik0zODUuNSw3Mi42IDM4NS4zLDY4LjkgMzg5LjksNjYuOCAzODguMSw2OS4wIDM5NC42LDY5LjEgMzk2LjYsNzIuMiAzOTEuOCw3My4yIDM5MC4xLDcwLjYgMzg1LjUsNzIuNloiLz48cGF0aCBkPSJNMzkwLjQsNjQuOCAzOTUuNCw2My4zIDQwNC44LDY0LjcgMzk0LjYsNjkuMSAzODguMSw2OS4wIDM5My42LDY3LjAgMzg5LjUsNjYuMCAzOTAuNCw2NC44WiIvPjxwYXRoIGQ9Ik0zNjEuNyw2NS42IDM2OC44LDY2LjMgMzcxLjIsNjQuMSAzODMuNSw3Mi4zIDM3Ni44LDc1LjUgMzY5LjIsNzEuMyAzNjMuOSw3Mi41IDM2Mi4wLDY4LjIgMzY1LjEsNjYuOCAzNjEuNyw2NS42WiIvPjxwYXRoIGQ9Ik0zNTUuNiw4My42IDM1MC42LDc3LjQgMzUxLjcsNzQuOCAzNDguNiw2OS4xIDM1NC44LDY4LjkgMzU5LjEsNzMuMCAzNjguMSw3MS4xIDM3NS4xLDczLjYgMzc0LjIsNzguOSAzNzYuMSw4Mi4zIDM3NC43LDgzLjcgMzc4LjUsODguNCAzNzUuNyw5MC45IDM2OS4zLDg5LjkgMzY4LjYsODguMSAzNjMuMiw4OC4zIDM1OC4wLDgzLjIgMzU1LjYsODMuNloiLz48cGF0aCBkPSJNMzM1LjYsNzkuMyAzMzcuMiw3My4xIDM0NS45LDcyLjUgMzQzLjgsNzYuNyAzMzUuNiw3OS4zWiIvPjxwYXRoIGQ9Ik0zNTIuMyw3MC4xIDM0Ny44LDY2LjYgMzUwLjksNjcuMCAzNTIuMyw3MC4xWiIvPjxwYXRoIGQ9Ik0yOTcuMiwzOS43IDI5OS42LDM2LjAgMjk4LjYsMzMuMiAzMDYuMSwyNS44IDMxMi4xLDI0LjEgMzE2LjYsMjUuOSAzMTcuMiwyOC44IDMwNy44LDMzLjggMzA2LjYsMzUuOSAzMDkuMiwzNy44IDMwNC43LDQzLjggMzAwLjEsNDUuMCAyOTcuMiwzOS43WiIvPjxwYXRoIGQ9Ik0zMjMuOCw0My43IDMyOC4wLDQ0LjcgMzMwLjksNDguMCAzMjguNyw0OC40IDMyOS40LDQ5LjkgMzE2LjYsNTAuNyAzMTYuNSw0Ny4yIDMyMy44LDQzLjdaIi8+PHBhdGggZD0iTTMyOS40LDQ5LjkgMzMyLjUsNDkuNiAzMzUuMCw1Mi4yIDM0Mi4zLDUzLjcgMzQxLjgsNTYuMyAzMzQuNSw1OS42IDMyOS4zLDU4LjEgMzI0LjYsNjAuMiAzMjYuNyw1OC41IDMyNC42LDU2LjAgMzE0LjQsNTUuNSAzMTcuMiw1Mi41IDMxNi42LDUwLjcgMzI5LjQsNDkuOVoiLz48cGF0aCBkPSJNMzE2LjUsNDcuMiAzMTcuNCw1Mi4wIDMxNS40LDU0LjYgMzA1LjIsNTIuNSAzMDEuOSw0OC42IDMwNy40LDQ1LjcgMzE2LjUsNDcuMloiLz48cGF0aCBkPSJNMzA2LjQsNTYuMCAzMDIuOCw1OC41IDI5NC43LDU3LjUgMzAwLjEsNTYuOSAzMDEuMSw1NC44IDMwNi40LDU2LjBaIi8+PHBhdGggZD0iTTMxNC40LDU1LjUgMzE1LjMsNTYuMyAzMTIuNyw1OC43IDMwOC43LDU5LjUgMzA1LjIsNTcuOSAzMDYuNCw1Ni4wIDMxNC40LDU1LjVaIi8+PHBhdGggZD0iTTMyMS40LDU1LjggMzI0LjYsNTYuMCAzMjYuNyw1OC41IDMyMy45LDU5LjkgMzIxLjQsNTUuOFoiLz48cGF0aCBkPSJNMzIzLjksNTkuOSAzMjYuMCw2MC4yIDMyNC40LDYyLjcgMzE1LjcsNjIuNSAzMTEuNSw1OS4wIDMxNi4wLDU2LjAgMzIxLjQsNTUuOCAzMjMuOSw1OS45WiIvPjxwYXRoIGQ9Ik0zMjEuMiw0NC42IDMxNi41LDQ3LjIgMzEyLjgsNDQuMCAzMjEuMiw0NC42WiIvPjxwYXRoIGQ9Ik0zMjIuNCw0MS44IDMyMy44LDQzLjcgMzIxLjIsNDQuNiAzMTIuOCw0NC4wIDMxNS4wLDQxLjMgMzIyLjQsNDEuOFoiLz48cGF0aCBkPSJNMzIzLjUsMzguNyAzMjIuNCw0MS44IDMxNy44LDQxLjMgMzE2LjMsMzkuMiAzMjMuNSwzOC43WiIvPjxwYXRoIGQ9Ik0zMDIuMCw0Ny40IDMwMy40LDUxLjQgMjk5LjAsNTIuNyAzMDEuMSw1NC44IDMwMC4xLDU2LjkgMjkxLjYsNTYuNyAyOTIuNiw1NC42IDI4OS42LDUzLjkgMjg5LjMsNTAuMyAyOTMuNyw0Ny4wIDI5My4zLDQ1LjYgMzAyLjAsNDcuNFoiLz48cGF0aCBkPSJNMzE1LjIsNjEuOSAzMjQuNCw2Mi43IDMyMy42LDY1LjIgMzE1LjcsNjYuMiAzMTUuMiw2MS45WiIvPjxwYXRoIGQ9Ik0zMTUuNyw2Ni4yIDMyMS40LDY1LjkgMzE1LjIsNjcuOSAzMTcuNCw3MS44IDMxNi4wLDcxLjQgMzE1LjAsNzMuNyAzMTEuMyw2OC44IDMxNS43LDY2LjJaIi8+PHBhdGggZD0iTTM0OS42LDcyLjYgMzI2LjIsNzQuMSAzMjMuMCw3My4zIDMyMC43LDY5LjEgMzMyLjEsNjUuMiAzMzkuNyw2Ni44IDM0Ni4zLDY1LjkgMzQ5LjcsNjguNyAzNDkuNiw3Mi42WiIvPjxwYXRoIGQ9Ik0zMjAuNiw2NS41IDMyNS4xLDY2LjMgMzIxLjAsNjguMCAzMjAuNiw2NS41WiIvPjxwYXRoIGQ9Ik0zMTIuNyw2Ny4wIDMxMS4zLDY4LjggMzEwLjIsNjcuOSAzMTAuNyw2NC4yIDMxMi43LDY3LjBaIi8+PHBhdGggZD0iTTMwNS44LDU4LjQgMzEwLjIsNjAuMyAzMDQuNSw2MS4wIDMwOC43LDY0LjUgMzAxLjIsNjAuNSAzMDUuOCw1OC40WiIvPjxwYXRoIGQ9Ik0yOTQuOSw1Ni45IDI5Ni4xLDU4LjQgMjg5LjQsNTguOCAyOTAuNSw1Ni44IDI5NC45LDU2LjlaIi8+PHBhdGggZD0iTTI4OS42LDUxLjkgMjg4LjgsNTMuOCAyODMuOSw1MS40IDI4OS42LDUxLjlaIi8+PHBhdGggZD0iTTI5MC43LDQ3LjggMjg5LjYsNTEuOSAyODUuMiw1MS4xIDI4Ny4zLDQ4LjQgMjkwLjcsNDcuOFoiLz48cGF0aCBkPSJNMjY1LjksNjUuNCAyNzAuMSw2Ni4yIDI2Ny44LDczLjEgMjY1LjIsNzAuMiAyNjUuOSw2NS40WiIvPjxwYXRoIGQ9Ik0yNjguNCw3Mi43IDI3MC4xLDY2LjIgMjY1LjksNjUuNCAyNjUuNCw2My43IDI4NC42LDY0LjUgMjc2LjcsNzMuMyAyNzEuNiw3NC40IDI2OC40LDcyLjdaIi8+PHBhdGggZD0iTTI3MC40LDQ3LjIgMjY5LjQsNDkuNyAyNjQuNSw1MC4zIDI2NC45LDQ3LjIgMjY4LjIsNDUuMyAyNjguMiw0Ni45IDI3MC40LDQ3LjJaIi8+PHBhdGggZD0iTTUzNy45LDE2MC45IDU0MC4wLDE2Mi42IDUzNS4yLDE1OS41IDUzNy45LDE2MC45WiIvPjxwYXRoIGQ9Ik01NTUuMiwxODkuOCA1NTEuNywxOTEuNiA1NTIuNiwxOTAuNCA1NTAuNCwxODguOSA1NTEuOCwxODUuNyA1NDguNSwxODEuNCA1NTMuNywxODUuOSA1NTcuNywxODYuMiA1NTUuMiwxODkuOFoiLz48cGF0aCBkPSJNNTQzLjksMTk1LjAgNTQ4LjgsMTkwLjQgNTUxLjEsMTkxLjcgNTQ1LjQsMTk4LjYgNTM5LjMsMTk5LjEgNTQzLjksMTk1LjBaIi8+PHBhdGggZD0iTTUwOS43LDE5MC45IDUxMC4xLDE5NC41IDUwNy4yLDE5NS4wIDUwNS4yLDE5MC43IDUwOS43LDE5MC45WiIvPjxwYXRoIGQ9Ik00NzYuMiwxNzcuOCA0NjMuNiwxODIuMiA0NTguOSwxODAuOCA0NjAuMSwxNzcuOCA0NTYuMywxNjguNiA0NTcuNywxNjguOSA0NTYuOSwxNjMuMSA0NjguMCwxNTguOCA0NzUuNSwxNTAuNiA0ODEuNiwxNTEuNyA0ODUuOSwxNDUuOSA0OTIuMywxNDcuMCA0OTAuOCwxNTEuNyA0OTguMSwxNTUuOCA1MDEuNywxNDUuMiA1MDcuNywxNTcuNyA1MTQuNSwxNjMuMCA1MTguOSwxNzEuNiA1MTMuMywxODUuNyA1MDcuNiwxODguMiA1MDUuNiwxODYuNSA1MDMuNCwxODcuOCA0OTguOCwxODYuNyA0OTUuMCwxODEuMSA0OTIuOCwxODIuNSA0OTQuNCwxNzguOSA0OTEuNSwxODEuOSA0ODguOSwxNzguNSA0ODQuMywxNzYuOCA0NzYuMiwxNzcuOFoiLz48cGF0aCBkPSJNNDA3LjIsMTE3LjYgNDA1LjAsMTE5LjkgNDA0LjcsMTE0LjEgNDA3LjIsMTE3LjZaIi8+PHBhdGggZD0iTTQ1MC4zLDEwMS40IDQ0OS4wLDk5LjYgNDUyLjMsOTguNSA0NTAuMywxMDEuNFoiLz48cGF0aCBkPSJNNDA0LjgsNjQuNyA0MDQuNCw2MC44IDQxNi41LDU0LjIgNDIxLjUsNTcuOCA0MjEuNSw2MC4zIDQyOC4zLDYxLjggNDI5LjksNjQuMSA0NDMuMyw2NS45IDQ0OS45LDY0LjUgNDU0LjAsNjIuNiA0NTQuMCw2MC41IDQ2Ni4xLDU4LjEgNDU5LjYsNTUuOSA0NzAuMiw0Ny45IDQ3NS45LDQ4LjkgNDc4LjYsNTMuNSA0ODMuOCw1Ni41IDQ5MC4wLDU1LjQgNDg3LjAsNjAuNSA0ODMuOCw2MC43IDQ4My4yLDY0LjYgNDY4LjMsNjkuOSA0NjkuMiw2Ni44IDQ2Mi44LDcwLjIgNDY2LjIsNzIuNiA0NzAuMyw3Mi4xIDQ2NS4zLDc2LjAgNDY5LjYsODAuOSA0NjkuMyw4Ni4xIDQ2NC42LDkxLjcgNDUxLjgsOTguMSA0NDMuOCw5My41IDQzOC4xLDk1LjEgNDM4LjQsOTYuOCA0MzQuNCw5NS40IDQzMy41LDkyLjUgNDMxLjgsOTIuNyA0MzMuNSw4Ny4yIDQyOS41LDg0LjMgNDE4LjIsODcuNSA0MDIuNSw4MS4xIDQwMi44LDc2LjkgMzk0LjYsNjkuMSA0MDQuOCw2NC43WiIvPjxwYXRoIGQ9Ik00NjkuNCw5Mi4wIDQ2Ny44LDk1LjYgNDY2LjgsOTMuMiA0NjkuMCw5MC42IDQ2OS40LDkyLjBaIi8+PHBhdGggZD0iTTI5Ni4yLDU3LjggMzAxLjUsNTguNCAzMDEuNyw1OS44IDI5OS4yLDYwLjEgMjk5LjYsNjIuMSAzMDguNSw2OC42IDMwNi4yLDY3LjYgMzA2LjUsNjkuOSAzMDQuNCw3MS40IDMwNC4wLDY4LjIgMjk1LjksNjIuMyAyOTEuNiw2Mi43IDI5MC42LDU5LjIgMjk2LjIsNTcuOFoiLz48cGF0aCBkPSJNMzAzLjAsNzEuMSAzMDMuNSw3My40IDI5OS4zLDcxLjkgMzAzLjAsNzEuMVoiLz48cGF0aCBkPSJNMjkzLjUsNjYuOSAyOTUuMyw2Ny41IDI5My43LDY5LjkgMjkzLjUsNjYuOVoiLz48cGF0aCBkPSJNMjk1LjQsNDUuNSAyOTMuMyw0NS42IDI5Mi42LDQzLjIgMjk2LjUsNDEuNCAyOTUuNCw0NS41WiIvPjxwYXRoIGQ9Ik0yOTkuMiw0My44IDI5OC44LDQ1LjggMjk3LjIsNDUuMCAyOTkuMiw0My44WiIvPjxwYXRoIGQ9Ik0yNzAuNCw0Ny4yIDI2OC4yLDQ2LjkgMjY4LjIsNDUuMyAyNzEuMiw0Ni4yIDI3MC40LDQ3LjJaIi8+PHBhdGggZD0iTTI3NS4yLDQ3LjkgMjcwLjQsNDIuOCAyNzIuMiw0MC4wIDI3Ny4wLDQxLjQgMjc1LjEsNDQuMCAyODIuNiw0OC45IDI4Mi4zLDUxLjEgMjcxLjAsNTIuOSAyNzQuNyw1MC45IDI3MS44LDUwLjEgMjczLjQsNDkuNiAyNzIuOSw0Ny44IDI3NS4yLDQ3LjlaIi8+PHBhdGggZD0iTTI1Ny40LDI4LjEgMjU4LjgsMzAuMiAyNTEuMCwzMi42IDI0NC42LDMxLjkgMjQ2LjEsMzEuMyAyNDIuNywzMC41IDI0NS40LDI5LjggMjQyLjIsMjkuNCAyNTcuNCwyOC4xWiIvPjxwYXRoIGQ9Ik0zNTIuMiw2NS41IDM1OC40LDY3LjkgMzU2LjAsNzAuOCAzNTQuOCw2OC45IDM1Mi4zLDcwLjEgMzUwLjAsNjYuNCAzNTIuMiw2NS41WiIvPjxwYXRoIGQ9Ik0zNDIuMiw2My4xIDM1MC43LDY0LjUgMzUyLjUsNjYuNSAzNDQuNiw2NS45IDM0Mi4yLDYzLjFaIi8+PHBhdGggZD0iTTQ2OC4wLDEwOS43IDQ2Ny4yLDEwOC41IDQ2OS4wLDEwOS4xIDQ2OC4wLDEwOS43WiIvPjxwYXRoIGQ9Ik00NzAuNywxMTMuOCA0NzMuMCwxMTEuOSA0NzEuMywxMTUuMyA0NzAuNywxMTMuOFoiLz48cGF0aCBkPSJNNDc2LjYsMTE2LjIgNDc1LjEsMTIwLjUgNDcyLjMsMTE3LjEgNDY5LjcsMTE4LjEgNDc1LjEsMTE0LjIgNDc2LjYsMTE2LjJaIi8+PHBhdGggZD0iTTQ2NC4zLDExNC44IDQ2Mi4zLDExNi4zIDQ2NS45LDExMS43IDQ2NC4zLDExNC44WiIvPjxwYXRoIGQ9Ik00NzAuMywxMDEuMyA0NjkuNCwxMDcuMiA0NzIuOCwxMDguMSA0NzMuMCwxMDkuOSA0NjcuNiwxMDcuOSA0NjYuNSwxMDUuNiA0NjcuOCwxMDAuOSA0NzAuMywxMDEuM1oiLz48cGF0aCBkPSJNNDY5LjgsMTExLjYgNDcxLjUsMTExLjQgNDY5LjgsMTEzLjEgNDY5LjgsMTExLjZaIi8+PHBhdGggZD0iTTQ3NS4yLDExMC41IDQ3NC4xLDExMy42IDQ3My4zLDEwOS45IDQ3NS4yLDExMC41WiIvPjxwYXRoIGQ9Ik00MzUuNywxMTkuMiA0NDAuMiwxMjAuNiA0NDIuMSwxMjcuMCA0MzcuNywxMjQuOCA0MzUuNywxMTkuMloiLz48cGF0aCBkPSJNNDYzLjQsMTIyLjcgNDYwLjIsMTIyLjQgNDU4LjMsMTI2LjggNDUwLjgsMTI2LjkgNDU5LjQsMTIyLjQgNDYxLjYsMTE4LjUgNDY1LjQsMTIwLjggNDYzLjQsMTIyLjdaIi8+PHBhdGggZD0iTTMwMS41LDU4LjQgMzA1LjgsNTguNCAzMDMuOCw2MC4wIDMwMS4zLDU5LjkgMzAxLjUsNTguNFoiLz48cGF0aCBkPSJNMzI0LjUsMjQuMiAzMjYuNiwyNi4zIDMyNS4yLDI3LjQgMzI4LjQsMzQuNCAzMjMuNywzNy4yIDMxNS42LDM4LjIgMzEzLjIsMzYuOCAzMTMuNSwzMy4xIDMxOS41LDMwLjIgMzE2LjcsMjguMiAzMTYuNiwyNS45IDMxMi4xLDI0LjEgMzE4LjUsMjQuOCAzMjMuMSwyMi41IDMyNC41LDI0LjJaIi8+PHBhdGggZD0iTTMxNS4xLDU0LjUgMzA3LjgsNTYuNSAzMDYuMyw1NS40IDMwOC45LDUzLjkgMzE1LjEsNTQuNVoiLz48cGF0aCBkPSJNMzAzLjQsNTEuNCAzMDkuMyw1My45IDMwMi4zLDU1LjMgMjk5LjUsNTMuOCAzMDMuNCw1MS40WiIvPjxwYXRoIGQ9Ik0zMzYuNywxMDcuMSAzMzcuMywxMDMuMiAzMzkuNywxMDEuNyAzNDcuMCwxMDkuNyAzNDIuMywxMDYuOSAzMzYuNywxMDcuMVoiLz48cGF0aCBkPSJNNTAwLjcsNjkuNSA0OTguMiw3NS43IDQ5MS4yLDc4LjIgNDkwLjEsNzYuNSA0ODMuOCw3Ny42IDQ4NS4zLDc4LjcgNDgyLjUsODEuMyA0ODEuMyw3OC40IDQ5Ni45LDcxLjAgNDk4LjMsNjYuNSA0OTkuOSw2Ni4yIDUwMC43LDY5LjVaIi8+PHBhdGggZD0iTTUwNS4wLDYyLjMgNTA2LjQsNjMuMyA0OTcuNyw2NS45IDUwMC44LDU5LjkgNTA1LjAsNjIuM1oiLz48cGF0aCBkPSJNNDg1LjksNzguMiA0ODkuNiw3Ny43IDQ4Ni45LDc5LjMgNDg1LjksNzguMloiLz48cGF0aCBkPSJNMTg5LjUsMTU5LjYgMTg5LjksMTYyLjUgMTk1LjUsMTY1LjQgMTkzLjQsMTcwLjUgMTg4LjgsMTcwLjEgMTkwLjEsMTY3LjEgMTgyLjUsMTYyLjcgMTgzLjksMTU4LjggMTg5LjUsMTU5LjZaIi8+PHBhdGggZD0iTTM2MC45LDEwMC4xIDM2Mi42LDEwMy43IDM2MS4yLDEwNS4zIDM0Ny42LDEwOS44IDM0Ni4zLDEwNS45IDM0Ny41LDEwMi4zIDM1My4xLDEwMy4yIDM2MC45LDEwMC4xWiIvPjxwYXRoIGQ9Ik0zMzQuNCw4NC40IDMzOC4zLDgzLjQgMzM3LjYsODEuMiAzNDEuMCw4MC4yIDM0OS41LDg0LjcgMzUzLjgsODUuMCAzNjAuOSw5NC4xIDM2NS45LDk0LjUgMzY1LjYsOTguNiAzNTYuNCwxMDAuNyAzNTMuMSwxMDMuMiAzNDcuNSwxMDIuMyAzNDYuNSwxMDQuMiAzMzMuOSw4Ni40IDMzNC40LDg0LjRaIi8+PHBhdGggZD0iTTIwNC4zLDI0Ny40IDIxMS43LDI0OC4wIDIxMi42LDI1MC40IDE5NS43LDI1MS4zIDIwNC4zLDI0Ny40WiIvPjxwYXRoIGQ9Ik0xNzYuOSwyNTAuNyAxODcuMywyNTAuNCAxODYuNCwyNTEuOSAxNzYuOSwyNTAuN1oiLz48cGF0aCBkPSJNMTY1LjAsMjM3LjEgMTY3LjksMjM3LjAgMTY4LjQsMjM0LjQgMTcwLjcsMjMzLjUgMTczLjcsMjM3LjMgMTY5LjQsMjM5LjAgMTYzLjQsMjM4LjMgMTY1LjAsMjM3LjFaIi8+PHBhdGggZD0iTTU2MC4wLDI1Ny41IDU2MC4wLDI2NS41IDAuMCwyNjUuNSAwLjAsMjU3LjUgMS41LDI1Ni42IDU3LjQsMjU4LjAgNDEuMSwyNTUuOSA0Mi4yLDI1My40IDM2LjAsMjUyLjAgNTIuMiwyNTAuOSAzOC40LDI0OC45IDMzLjcsMjQ1LjYgNDQuNiwyNDYuNCA1Mi43LDI0NS4wIDUyLjYsMjQzLjMgNjkuNywyNDEuNyAxMDIuOCwyNDAuOCAxMTIuNywyNDMuMCAxMjQuMywyNDIuNiAxMTguNywyMzkuMSAxNjMuNSwyNDEuMCAxNzUuMiwyMzguOSAxNzMuNCwyMzQuNyAxNzQuNiwyMzEuMSAxOTAuMSwyMjUuMCAxODMuNSwyMjcuMyAxODMuNCwyMjkuNCAxNzcuOSwyMzIuMSAxODMuOSwyMzYuMyAxODUuNCwyNDAuOCAxNzAuMiwyNDUuMiAxNTkuOCwyNDUuNCAxNjUuNCwyNDcuMiAxNTguNiwyNDkuMSAxODkuNCwyNTUuMiAyMzUuNiwyNTAuOSAyMzMuOCwyNDkuMiAyMjQuNiwyNDkuNSAyMjQuMywyNDcuOCAyNTIuNywyNDIuOSAyNTUuNiwyNDIuMCAyNTQuNCwyNDEuMCAyNTYuMCwyMzkuOSAyNjkuMywyMzYuNiAyNzkuNiwyMzcuNyAyOTIuMCwyMzUuMCAyOTYuOCwyMzYuNCAzMDAuOSwyMzUuMSAzMjIuMSwyMzUuOSAzMzIuNywyMzIuOSAzNDAuMSwyMzQuOCAzNjQuOCwyMjguOCAzNzUuNiwyMzIuMSAzODcuMiwyMzIuMCAzODguNCwyMzQuMCAzODUuNSwyMzUuNiAzODcuNCwyMzYuMiAzODUuNywyMzguMCAzODguNywyMzguNiAzOTQuOSwyMzUuMCA0MTYuOSwyMjkuNCA0MjkuMCwyMzEuMiA0MzUuMSwyMzEuMCA0NDAuMCwyMjguNCA0NDUuMiwyMzAuNSA0NTYuNywyMjguOSA0NjYuNCwyMzEuMCA0ODkuNiwyMjkuNCA0OTAuMSwyMjguMSA0OTMuOCwyMzAuNiA1MDYuMywyMzAuNSA1MTEuNSwyMzIuNyA1NDYuMywyMzcuNyA1MzQuNCwyNDQuNiA1MzYuMywyNDcuNiA1MzkuOCwyNDguNCA1MzEuNiwyNDkuMSA1MjguNiwyNTEuOCA1NDMuNSwyNTYuMSA1NjAuMCwyNTcuNVoiLz48cGF0aCBkPSJNMjc2LjYsNzUuNiAyNzguMCw4MC4wIDI2Ni41LDg1LjIgMjY2LjMsODcuOCAyNjIuMyw4OC4yIDI1Ny4xLDk2LjMgMjUzLjUsOTYuNSAyNTcuNSw4OS4xIDI2NS4xLDgzLjUgMjY2LjUsNzguNSAyNzAuOCw3NC43IDI3Ni42LDc1LjZaIi8+PHBhdGggZD0iTTMzNy4zLDk1LjYgMzE4LjksOTUuNiAzMTguNiw4MS44IDMzMy4zLDgxLjYgMzMzLjEsODYuOCAzMzAuMyw4My44IDMzNy4zLDk1LjZaIi8+PHBhdGggZD0iTTMxOC45LDk1LjYgMzE4LjksOTguNiAzMTcuMSw5OS4zIDMwNC43LDkzLjQgMzAyLjAsOTQuOCAyOTYuMCw5Mi4wIDI5NC41LDg5LjQgMjk1LjUsODEuNCAyOTcuOSw3OC43IDMwOS43LDgzLjAgMzEyLjQsNzkuMyAzMTguOCw4MC42IDMxOC45LDk1LjZaIi8+PHBhdGggZD0iTTM1NC4zLDExNi44IDM0OS45LDEyMS40IDM0MS41LDEyMy44IDMzNi4yLDEyMi4yIDMzMS4zLDExNy4yIDMzNi43LDEwNy4xIDMzOS4wLDEwNi4zIDM0NC43LDEwOC42IDM0NS4wLDExMi4yIDM0Ny45LDExNS4wIDM1NC4zLDExNi44WiIvPjxwYXRoIGQ9Ik0zNDUuOSwxMDkuOSAzNDcuNCwxMTAuMiAzNDYuNSwxMTIuNCAzNDUuMCwxMTIuMiAzNDUuOSwxMDkuOVoiLz48cGF0aCBkPSJNMzU2LjEsMTExLjcgMzU0LjMsMTE2LjggMzQ2LjIsMTEyLjkgMzQ3LjEsMTExLjYgMzQ4LjYsMTEzLjEgMzU2LjEsMTExLjdaIi8+PHBhdGggZD0iTTMzMi43LDEzMC40IDMyNi4wLDEzMS4wIDMyOC42LDEyMy4yIDMzMy42LDEyMy42IDMzMi43LDEzMC40WiIvPjxwYXRoIGQ9Ik0zMjcuMywxMzAuNyAzMjcuOCwxMzIuNCAzMjUuMSwxMzMuMyAzMjcuMywxMzAuN1oiLz48cGF0aCBkPSJNMzA4LjksNjQuMyAzMDQuOCw2MC4zIDMxMC4xLDYwLjkgMzA4LjksNjQuM1oiLz48cGF0aCBkPSJNMzE0LjgsNjQuOCAzMTUuNyw2Ni4yIDMxMi4xLDY2LjYgMzE0LjgsNjQuOFoiLz48cGF0aCBkPSJNMzA5LjMsNTkuMyAzMTUuMyw2MS4zIDMxNS4xLDY0LjUgMzA5LjksNjIuOSAzMDkuMyw1OS4zWiIvPjxwYXRoIGQ9Ik0zMTEuMiw2NC4zIDMwOC43LDY0LjUgMzA5LjksNjIuOSAzMTEuMiw2NC4zWiIvPjxwYXRoIGQ9Ik0zMTIuMCw2NS41IDMxMi4xLDYzLjQgMzEzLjksNjQuMiAzMTIuMCw2NS41WiIvPjxwYXRoIGQ9Ik0zMjguMCwxMjMuNiAzMjMuNSwxMjIuMyAzMTcuMiwxMTUuOSAzMjAuMSwxMTMuMiAzMjEuNiwxMTQuNiAzMjguOCwxMTQuMSAzMzEuNywxMTAuNSAzMzIuOCwxMTUuOCAzMzEuMywxMTcuMiAzMzQuOSwxMjAuNiAzMjguMCwxMjMuNloiLz48L2c+PC9zdmc+";
+    let activeView="overview", regionSelected="All", vendorSelected="All";
+    const fmt=n=>n.toLocaleString("en-US");
+    const filteredVendors=()=>vendors.filter(v=>(regionSelected==="All"||v.region===regionSelected||v.region==="Global")&&(vendorSelected==="All"||v.name===vendorSelected));
+    const filteredLinks=()=>links.filter(l=>(regionSelected==="All"||l.region===regionSelected)&&(vendorSelected==="All"||l.vendor===vendorSelected));
+    function showView(name){
+      activeView=name;
+      document.querySelectorAll(".section-view").forEach(s=>s.classList.toggle("active",s.id===`view-${name}`));
+      document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
+      document.getElementById("crumbTitle").textContent=titleMap[name][0];
+      document.getElementById("pageTitle").textContent=titleMap[name][1];
+      document.getElementById("pageSub").textContent=titleMap[name][2];
+      document.getElementById("pageEyebrow").textContent=`NETWORK PULSE · ${name==="overview"?"GLOBAL ESTATE":titleMap[name][0].toUpperCase()}`;
+      document.getElementById("sidebar").classList.remove("open");
+      render();
+    }
+    function metric(label,value,detail,trend,color,icon){
+      const path=icon==="sites"?"M3 6h18M5 6v14h14V6M9 10h6M9 14h6":icon==="links"?"M8 12h8M10 8l-3 4 3 4m4-8 3 4-3 4":icon==="uptime"?"M4 13l4-4 4 3 8-8M15 4h5v5":"M12 3v18M3 12h18";
+      return `<article class="card metric"><div class="metric-top">${label}<span class="metric-icon" style="color:${color};background:${color}15"><svg viewBox="0 0 24 24" fill="none"><path d="${path}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="metric-value">${value}</div><div class="metric-foot"><span class="trend ${trend.startsWith("-")?"down":""}">${trend}</span>${detail}</div><svg class="spark" viewBox="0 0 80 27" fill="none"><path d="M1 22C10 19 11 22 17 16s10 2 16-3 9 2 15-2 11 6 17-3 9 0 14-6" stroke="${color}" stroke-width="2" stroke-linecap="round"/><path d="M1 22C10 19 11 22 17 16s10 2 16-3 9 2 15-2 11 6 17-3 9 0 14-6v26H1Z" fill="${color}" opacity=".08"/></svg></article>`;
+    }
+    function renderMetrics(){
+      const lv=filteredLinks(), vv=filteredVendors(), count=regionSelected==="All"&&vendorSelected==="All";
+      const totalLinks=count?486:Math.max(lv.length,Math.round(lv.length*2.7));
+      const totalSites=count?402:Math.max(1,Math.round(totalLinks*.83));
+      const cards=[
+        metric("Active WAN links",fmt(totalLinks),"vs. previous month","+4.8%","#5368f5","links"),
+        metric("Connected sites",fmt(totalSites),"across 42 countries","+2.3%","#23b6a2","sites"),
+        metric("Availability","99.94%","rolling 30-day average","+0.12%","#efa83a","uptime"),
+        metric("Links above 80%","18","capacity watchlist","-3 links","#8d66d8","")
+      ];
+      document.getElementById("metricCards").innerHTML=cards.join("");
+    }
+    function vendorChart(){
+      const data=filteredVendors().slice().sort((a,b)=>b.links-a.links).slice(0,10), width=620,height=190,left=112,right=38,top=8,row=17.1,max=100;
+      const ticks=[0,25,50,75,100];
+      let s=`<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Bar chart comparing active WAN links by vendor">`;
+      ticks.forEach(t=>{let x=left+(width-left-right)*(t/100);s+=`<line x1="${x}" y1="${top-2}" x2="${x}" y2="${top+row*data.length-2}" stroke="#edf0f5"/><text x="${x}" y="${height-4}" text-anchor="middle" fill="#a0a9b8" font-size="8">${t}</text>`});
+      data.forEach((v,i)=>{let y=top+i*row,span=width-left-right,linkW=span*v.links/max,siteW=span*v.sites/max;s+=`<text x="${left-8}" y="${y+9}" text-anchor="end" fill="#7d879b" font-size="9">${v.name.length>17?v.name.slice(0,16)+"…":v.name}</text><rect x="${left}" y="${y}" width="${span}" height="6" rx="3" fill="#f1f2f7"/><rect x="${left}" y="${y}" width="${linkW}" height="6" rx="3" fill="#5368f5"/><rect x="${left}" y="${y+7}" width="${span}" height="6" rx="3" fill="#f1f2f7"/><rect x="${left}" y="${y+7}" width="${siteW}" height="6" rx="3" fill="#b4bcff"/><text x="${Math.min(left+linkW+4,width-24)}" y="${y+6}" fill="#68738a" font-size="7">${v.links}</text><text x="${Math.min(left+siteW+4,width-24)}" y="${y+13}" fill="#68738a" font-size="7">${v.sites}</text>`});
+      return s+"</svg>";
+    }
+    function mapSvg(){
+      const spots=[
+        {lon:-87.63,lat:41.88,r:"Americas",name:"Chicago"},
+        {lon:-74,lat:40.71,r:"Americas",name:"New York"},
+        {lon:-79.38,lat:43.65,r:"Americas",name:"Toronto"},
+        {lon:-46.63,lat:-23.55,r:"Americas",name:"Sao Paulo"},
+        {lon:-80.19,lat:25.76,r:"Americas",name:"Miami"},
+        {lon:-.12,lat:51.5,r:"EMEA",name:"London"},
+        {lon:8.68,lat:50.11,r:"EMEA",name:"Frankfurt"},
+        {lon:55.27,lat:25.2,r:"EMEA",name:"Dubai"},
+        {lon:36.82,lat:-1.29,r:"EMEA",name:"Nairobi"},
+        {lon:103.82,lat:1.35,r:"APAC",name:"Singapore"},
+        {lon:139.69,lat:35.68,r:"APAC",name:"Tokyo"},
+        {lon:151.21,lat:-33.87,r:"APAC",name:"Sydney"},
+        {lon:174.76,lat:-36.85,r:"APAC",name:"Auckland"}
+      ];
+      let s=`<svg viewBox="0 0 560 220" role="img" aria-label="World map showing illustrative WAN locations by operating region"><defs><linearGradient id="mapOcean" x2="0" y2="1"><stop stop-color="#f9fbff"/><stop offset="1" stop-color="#eef3fc"/></linearGradient></defs><rect width="560" height="220" rx="10" fill="url(#mapOcean)"/>`;
+      for(let lon=-150;lon<=180;lon+=30){const x=(lon+180)*560/360;s+=`<path d="M${x} 0 Q${x+4} 110 ${x} 220" fill="none" stroke="#dfe6f2" stroke-width=".6"/>`}
+      for(let lat=-60;lat<=60;lat+=30){const y=(85-lat)*220/145;s+=`<path d="M0 ${y} Q280 ${y-3} 560 ${y}" fill="none" stroke="#dfe6f2" stroke-width=".6"/>`}
+      s+=`<image href="${worldMapImage}" x="0" y="0" width="560" height="220"/>`;
+      spots.forEach((p,i)=>{const x=(p.lon+180)*560/360,y=(85-p.lat)*220/145,col=i%5===0?"#23b6a2":i%3===0?"#efa83a":"#5368f5";s+=`<g class="map-point ${regionSelected!=="All"&&regionSelected!==p.r?"dimmed":""}" data-region="${p.r}" tabindex="0" role="button" aria-label="${p.name}, ${p.r} WAN locations"><title>${p.name} · ${p.r}</title><circle cx="${x}" cy="${y}" r="8" fill="${col}" opacity=".16"/><circle cx="${x}" cy="${y}" r="3.2" fill="${col}" stroke="white" stroke-width="1.2"/></g>`});
+      s+=`<text x="9" y="211" fill="#7f8ba1" font-size="7.5">COUNTRY OUTLINES · NATURAL EARTH · LOCATION MARKERS ARE ILLUSTRATIVE</text></svg>`;
+      return s;
+    }
+    function table(rows,headers,cls=""){
+      return `<table class="${cls}"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`;
+    }
+    function utilizationClass(n){return n>=85?"red":n>=75?"amber":"green"}
+    function linkRows(data,all=false){
+      const records=(all?data:data.slice().sort((a,b)=>b.util-a.util)).map(l=>`<tr><td class="link-id">${l.id}</td><td>${l.site}</td><td>${l.vendor}</td><td>${l.bandwidth} Mbps</td><td><div class="util"><span>${l.util}%</span><span class="util-track"><i class="util-fill" style="display:block;width:${l.util}%;background:${l.util>=85?"#ef7378":l.util>=75?"#efa83a":"#23b6a2"}"></i></span></div></td><td><span class="pill ${utilizationClass(l.util)}">${l.util>=85?"Watch":l.util>=75?"Elevated":"Healthy"}</span></td></tr>`);
+      return table(records,["Circuit ID","Site","Vendor","Bandwidth","Utilization","Status"],"full-table");
+    }
+    function tierBars(){
+      const max=Math.max(...tiers.map(t=>t.count));
+      return tiers.map(t=>`<div class="tier-row"><span class="tier-name">${t.name}</span><div class="tier-track"><div class="tier-fill" style="width:${t.count/max*100}%;background:${t.color}"></div></div><span class="tier-count">${t.count}</span></div>`).join("");
+    }
+    function renderVendors(){
+      const data=filteredVendors().slice().sort((a,b)=>b.links-a.links);
+      document.getElementById("vendorChart").innerHTML=vendorChart();
+      document.getElementById("vendorHighlights").innerHTML=data.slice(0,6).map((v,i)=>`<div class="vendor-row" data-vendor="${v.name}"><span class="vendor-rank">${String(i+1).padStart(2,"0")}</span><span class="vendor-name">${v.name}</span><span class="vendor-val">${v.links}</span><span class="bar-track"><i class="bar-fill" style="display:block;width:${v.links/data[0].links*100}%"></i></span></div>`).join("");
+      const rows=data.map((v,i)=>`<tr><td>${String(i+1).padStart(2,"0")}</td><td><b style="color:#46536d">${v.name}</b></td><td>${v.links}</td><td>${v.sites}</td><td>${v.region}</td><td>${v.type}</td><td><span class="pill green">${v.availability}%</span></td></tr>`);
+      document.getElementById("vendorTable").innerHTML=table(rows,["Rank","WAN vendor","Links","Sites served","Primary region","Access type","Availability"],"full-table");
+      const tech=[["MPLS / private",205,"#5368f5"],["Internet / SD-WAN",208,"#23b6a2"],["Satellite",46,"#efa83a"],["Wireless / LTE",27,"#8d66d8"]];
+      const max=Math.max(...tech.map(t=>t[1]));
+      document.getElementById("typeChart").innerHTML=`<div style="padding:6px 4px 13px;display:grid;gap:15px">${tech.map(t=>`<div style="display:grid;grid-template-columns:115px 1fr 35px;gap:10px;align-items:center;font-size:9px;color:#768198"><span>${t[0]}</span><div class="bar-track" style="height:9px"><i class="bar-fill" style="display:block;width:${t[1]/max*100}%;height:100%;background:${t[2]}"></i></div><b style="color:#4b5870;text-align:right">${t[1]}</b></div>`).join("")}</div>`;
+      document.querySelectorAll("#vendorHighlights .vendor-row").forEach(el=>el.onclick=()=>selectVendor(el.dataset.vendor));
+      document.querySelectorAll("#vendorTable tbody tr").forEach((el,i)=>el.onclick=()=>selectVendor(data[i].name));
+    }
+    function renderRegions(){
+      document.getElementById("overviewMap").innerHTML=mapSvg();
+      document.getElementById("largeMap").innerHTML=mapSvg();
+      document.getElementById("regionSummary").innerHTML=regions.filter(r=>regionSelected==="All"||r.name===regionSelected).map(r=>`<div class="vendor-row" style="grid-template-columns:1fr 50px 50px"><span class="vendor-name">${r.name}</span><span class="vendor-val">${r.sites} sites</span><span class="vendor-val">${r.links} links</span></div><div style="grid-column:1/-1;margin:-5px 0 4px;height:4px;background:#f1f2f7;border-radius:5px"><i style="display:block;height:100%;width:${r.sites/148*100}%;background:#6374f5;border-radius:5px"></i></div>`).join("");
+      document.getElementById("countryCards").innerHTML=countries.filter(c=>regionSelected==="All"||c.region===regionSelected).map(c=>`<div class="country-card"><div class="country-top"><span>${c.flag} &nbsp;${c.country}</span><span style="color:#9ba4b5;font-weight:500">${c.region}</span></div><div class="country-count">${c.sites} <span style="font-size:9px;color:#929bad;font-weight:500">sites</span></div><div class="coverage-bar"><i style="width:${c.sites/68*100}%"></i></div><div class="country-meta">${c.vendor}</div></div>`).join("");
+      document.querySelectorAll(".map-point").forEach(p=>{p.onclick=()=>selectRegion(p.dataset.region);p.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectRegion(p.dataset.region)}}});
+    }
+    function renderTiers(){
+      document.getElementById("tierBars").innerHTML=tierBars();
+      document.getElementById("tierMetrics").innerHTML=[
+        metric("Total sites","402","across all service tiers","+2.3%","#5368f5","sites"),
+        metric("Premium-class sites","138","Premium+ and Premium","+5.1%","#8d66d8",""),
+        metric("Standard sites","178","largest service category","+1.2%","#23b6a2",""),
+        metric("Basic / remote","86","includes satellite-ready sites","+3.8%","#efa83a","")
+      ].join("");
+      document.getElementById("tierTable").innerHTML=table(tiers.map(t=>`<tr><td><b style="color:#48546c">${t.name}</b></td><td>${t.count}</td><td>${(t.count/402*100).toFixed(1)}%</td><td>${t.bandwidth}</td><td>${t.sla}</td><td>${t.description}</td></tr>`),["Site category","Sites","Estate share","Typical bandwidth","Availability target","Service profile"],"full-table");
+      document.getElementById("regionTierChart").innerHTML=`<svg viewBox="0 0 500 145" role="img" aria-label="Stacked bar chart showing site tier mix by region">${regions.map((r,i)=>{let x=126,y=15+i*39,w=310;let total=r.mix.reduce((a,b)=>a+b,0),out=`<text x="0" y="${y+14}" fill="#7b869b" font-size="10">${r.name}</text>`;r.mix.forEach((v,j)=>{let wid=w*v/total;out+=`<rect x="${x}" y="${y}" width="${wid}" height="18" rx="3" fill="${tiers[j].color}"/><text x="${x+wid/2}" y="${y+12}" text-anchor="middle" fill="${j===3?"#66718a":"white"}" font-size="8">${v}</text>`;x+=wid});return out}).join("")}</svg>`;
+      document.getElementById("tierDefinitions").innerHTML=tiers.map((t,i)=>`<div class="activity-row"><span class="activity-mark" style="color:${t.color};background:${t.color}18">0${i+1}</span><div class="activity-text"><b style="color:#48546c">${t.name}</b><small>${t.description} · SLA ${t.sla}</small></div></div>`).join("");
+    }
+    function renderStarlink(){
+      document.getElementById("earthMap").setAttribute("href",worldMapImage);
+      document.getElementById("starMetrics").innerHTML=[
+        metric("Starlink links","42","across 18 countries","+6 this quarter","#5368f5","links"),
+        metric("Connected sites","38","remote locations served","+4.2%","#23b6a2","sites"),
+        metric("Availability","99.87%","rolling 30-day average","+0.08%","#efa83a","uptime"),
+        metric("Median latency","38 ms","global round-trip time","-4 ms","#8d66d8","")
+      ].join("");
+      document.getElementById("starStats").innerHTML=[["Satellites in view","7"],["Active beams","128"],["Average downlink","142 Mbps"],["Average uplink","19 Mbps"],["Gateway handoffs today","16,408"],["Coverage status","Global · nominal"]].map((x,i)=>`<div class="star-stat"><span>${x[0]}</span><strong style="${i===5?"color:#23a17e":""}">${x[1]}</strong></div>`).join("");
+      const dist=[["Americas",17],["EMEA",13],["APAC",12]];
+      document.getElementById("starRegionList").innerHTML=dist.map(x=>`<div class="vendor-row" style="grid-template-columns:1fr 35px 100px"><span class="vendor-name">${x[0]}</span><span class="vendor-val">${x[1]}</span><span class="bar-track"><i class="bar-fill" style="display:block;width:${x[1]/17*100}%;background:#23b6a2"></i></span></div>`).join("");
+      const events=[["↗","Successful gateway handoff","Singapore · beam SG-04","2 min ago","#eaf8f2","#23a17e"],["●","Link quality nominal","Reykjavik · 142 Mbps downlink","18 min ago","#edf0ff","#5368f5"],["↻","Terminal re-acquired","Outback AU · 38 ms latency","42 min ago","#fff5e3","#d29a37"],["✓","Scheduled health check","Nairobi · all metrics normal","1 hr ago","#eaf8f2","#23a17e"]];
+      document.getElementById("starEvents").innerHTML=events.map(e=>`<div class="activity-row"><span class="activity-mark" style="color:${e[5]};background:${e[4]}">${e[0]}</span><div class="activity-text"><b style="color:#505d74;font-weight:600">${e[1]}</b><small>${e[2]}</small></div><span class="activity-time">${e[3]}</span></div>`).join("");
+    }
+    function render(){
+      renderMetrics();renderVendors();renderRegions();renderTiers();renderStarlink();
+      const top=filteredLinks().slice().sort((a,b)=>b.util-a.util);
+      document.getElementById("topLinks").innerHTML=linkRows(top.slice(0,5));
+      document.getElementById("allLinks").innerHTML=linkRows(top,true);
+      document.getElementById("linkMetrics").innerHTML=[
+        metric("Circuits shown",fmt(top.length),"matching selected filters","Live","#5368f5","links"),
+        metric("Average utilization",`${top.length?(top.reduce((a,b)=>a+b.util,0)/top.length).toFixed(1):"0"}%`,"across displayed circuits","Current","#23b6a2",""),
+        metric("Above 85% utilization",top.filter(l=>l.util>=85).length,"high-utilization watchlist","Review","#ef6c72",""),
+        metric("Total capacity",`${top.reduce((a,b)=>a+b.bandwidth,0).toLocaleString()} Mbps`,"displayed circuit capacity","—","#8d66d8","")
+      ].join("");
+      document.querySelectorAll(".map-point").forEach(p=>{p.onclick=()=>selectRegion(p.dataset.region);p.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectRegion(p.dataset.region)}}});
+    }
+    function selectRegion(value){
+      regionSelected=value;
+      document.getElementById("regionFilter").value=value;
+      document.querySelectorAll(".filter-chip").forEach(c=>c.classList.toggle("selected",c.dataset.region===value));
+      render();
+    }
+    function selectVendor(value){
+      vendorSelected=vendorSelected===value?"All":value;
+      document.getElementById("vendorFilter").value=vendorSelected;
+      showToast(vendorSelected==="All"?"Vendor filter cleared":`Filtered to ${value}`);
+      render();
+    }
+    let toastTimer;
+    function showToast(message){
+      const el=document.getElementById("toast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2200);
+    }
+    document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
+    document.querySelector("main").addEventListener("click",e=>{
+      const link=e.target.closest("[data-link]");
+      if(link) showView(link.dataset.link);
+    });
+    document.querySelectorAll(".filter-chip").forEach(b=>b.addEventListener("click",()=>selectRegion(b.dataset.region)));
+    document.getElementById("regionFilter").addEventListener("change",e=>selectRegion(e.target.value));
+    document.getElementById("vendorFilter").addEventListener("change",e=>{vendorSelected=e.target.value;render()});
+    document.getElementById("menuToggle").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("open"));
+    document.getElementById("helpButton").addEventListener("click",()=>showToast("Northstar WAN demo · All data shown is fictional."));
+    document.getElementById("exportButton").addEventListener("click",()=>{
+      const rows=[["Circuit ID","Site","Vendor","Region","Bandwidth (Mbps)","Utilization (%)"],...filteredLinks().map(l=>[l.id,l.site,l.vendor,l.region,l.bandwidth,l.util])];
+      const csv=rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");
+      const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="northstar-wan-demo.csv";a.click();URL.revokeObjectURL(a.href);showToast("Demo link data exported as CSV");
+    });
+    document.getElementById("vendorSearch").addEventListener("input",e=>{
+      const q=e.target.value.toLowerCase();document.querySelectorAll("#vendorTable tbody tr").forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q));
+    });
+    document.getElementById("linkSearch").addEventListener("input",e=>{
+      const q=e.target.value.toLowerCase();document.querySelectorAll("#allLinks tbody tr").forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q));
+    });
+    vendors.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;document.getElementById("vendorFilter").appendChild(o)});
+    render();
+  </script>
+</body>
+</html>
